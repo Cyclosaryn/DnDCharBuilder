@@ -1,0 +1,113 @@
+{% extends 'characters/base.html' %}
+
+{% block title %}Home - D&D Character Builder{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto text-center">
+        <h1 class="display-3 mb-4">Welcome to the D&D Character Builder</h1>
+        <p class="lead mb-4">
+            Create and manage your Dungeons & Dragons 5th Edition (2014) characters with ease.
+            Build heroes, track their abilities, and bring your adventures to life!
+        </p>
+        
+                <div class="d-grid gap-3 d-sm-flex justify-content-sm-center mb-5">
+            <a href="{% url 'character_create_step1' %}" class="btn btn-primary btn-lg px-4">
+                <i class="fas fa-user-plus"></i> Create New Character
+            </a>
+            <a href="{% url 'character_list' %}" class="btn btn-outline-secondary btn-lg px-4">
+                <i class="fas fa-users"></i> View Characters
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-dice-d20"></i> Official D&D 5e Rules
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">2014 Rules</h5>
+                <p class="card-text">
+                    This character builder follows the official D&D 5th Edition (2014) rules
+                    including ability scores, skill proficiencies, and character progression.
+                </p>
+                <a href="https://www.dndbeyond.com/sources/dnd/basic-rules-2014" target="_blank" class="btn btn-sm btn-outline-primary">
+                    View Rules Reference
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-book"></i> Explore Options
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Races, Classes & More</h5>
+                <p class="card-text">
+                    Browse available races, classes, and backgrounds to plan your character.
+                    Learn about abilities, proficiencies, and special features.
+                </p>
+                <a href="{% url 'race_list' %}" class="btn btn-sm btn-outline-primary me-2">Races</a>
+                <a href="{% url 'class_list' %}" class="btn btn-sm btn-outline-primary me-2">Classes</a>
+                <a href="{% url 'background_list' %}" class="btn btn-sm btn-outline-primary">Backgrounds</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-bolt"></i> Quick Start
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Build in 3 Steps</h5>
+                <ol class="card-text">
+                    <li>Choose race, class, and background</li>
+                    <li>Assign ability scores and skills</li>
+                    <li>Add personality and equipment</li>
+                </ol>
+                <a href="{% url 'character_create_step1' %}" class="btn btn-sm btn-primary">Start Building</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> Features
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-check-circle text-success"></i> Complete Character Creation</h6>
+                        <ul>
+                            <li>All core races, classes, and backgrounds</li>
+                            <li>Ability score assignment (Standard Array or Manual)</li>
+                            <li>Automatic modifier and proficiency calculations</li>
+                            <li>Auto-populated languages and tool proficiencies</li>
+                            <li>Hit point tracking with temporary HP</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-check-circle text-success"></i> Character Management</h6>
+                        <ul>
+                            <li>View and edit characters with full details</li>
+                            <li>Track skills, equipment, and money</li>
+                            <li>Combat tracking: death saves, exhaustion, conditions</li>
+                            <li>Inspiration and character advancement</li>
+                            <li>Print-friendly character sheets</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

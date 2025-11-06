@@ -1,0 +1,22 @@
+<!-- Character Info -->
+<div class="card mb-2">
+    <div class="card-header p-2"><strong>CHARACTER INFO</strong></div>
+    <div class="card-body p-2 text-start">
+        <div class="mb-2">
+            <small class="text-muted" style="font-size: 0.85rem;">PLAYER NAME</small>
+            <p class="mb-0" style="font-size: 0.95rem;">{{ character.player_name|default:"—" }}</p>
+        </div>
+        <div class="mb-2">
+            <small class="text-muted" style="font-size: 0.85rem;">BACKGROUND</small>
+            <p class="mb-0" style="font-size: 0.95rem;">{{ character.background.name }}</p>
+        </div>
+        <div class="mb-2">
+            <small class="text-muted" style="font-size: 0.85rem;">ALIGNMENT</small>
+            <p class="mb-0" style="font-size: 0.95rem;">{{ character.alignment|default:"—" }}</p>
+        </div>
+        <div class="mb-0">
+            <small class="text-muted" style="font-size: 0.85rem;">EXPERIENCE POINTS</small>
+            <p class="mb-0" style="font-size: 0.95rem;">{{ character.experience_points|default:0 }}</p>
+        </div>
+    </div>
+</div>

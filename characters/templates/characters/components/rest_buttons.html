@@ -1,0 +1,19 @@
+<!-- Rest Buttons -->
+<div class="row g-2 mb-2">
+    <div class="col-6">
+        <form method="post" action="{% url 'short_rest' character.pk %}" class="rest-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-info w-100" style="font-size: 0.85rem;">
+                <i class="fas fa-hourglass-half"></i> Short Rest
+            </button>
+        </form>
+    </div>
+    <div class="col-6">
+        <form method="post" action="{% url 'long_rest' character.pk %}" class="rest-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-success w-100" style="font-size: 0.85rem;">
+                <i class="fas fa-bed"></i> Long Rest
+            </button>
+        </form>
+    </div>
+</div>

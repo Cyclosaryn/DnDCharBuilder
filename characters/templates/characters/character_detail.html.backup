@@ -1,0 +1,809 @@
+{% extends 'characters/base.html' %}
+
+{% block title %}{{ character.name }} - Character Sheet{% endblock %}
+
+{% block content %}
+<style>
+    /* Center all text in character sheet */
+    .character-sheet * {
+        text-align: center;
+    }
+    .character-sheet .text-start {
+        text-align: left !important;
+    }
+    /* Ability score styling */
+    .ability-box {
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 8px;
+        margin-bottom: 8px;
+    }
+    .ability-score {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    .ability-modifier {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+</style>
+
+<!-- Header with Character Name and Info -->
+<div class="text-center mb-3">
+    <h1 class="mb-1">{{ character.name }}</h1>
+    <p class="mb-2" style="font-size: 1.1rem;">
+        <strong>Level {{ character.level }} {{ character.race.name }} {{ character.character_class.name }}</strong>
+    </p>
+    <div class="btn-group">
+        {% if character.level < 20 %}
+        <a href="{% url 'character_level_up' character.pk %}" class="btn btn-success btn-sm">
+            <i class="fas fa-arrow-up"></i> Level Up
+        </a>
+        {% endif %}
+        <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-edit"></i> Edit
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'character_edit' character.pk %}"><i class="fas fa-clipboard-list"></i> Basic Info</a></li>
+            <li><a class="dropdown-item" href="{% url 'character_edit_skills' character.pk %}"><i class="fas fa-bolt"></i> Skills</a></li>
+            <li><a class="dropdown-item" href="{% url 'character_edit_details' character.pk %}"><i class="fas fa-backpack"></i> Details & Equipment</a></li>
+            {% if character.is_spellcaster %}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'character_manage_spells' character.pk %}"><i class="fas fa-magic"></i> Manage Spells</a></li>
+            {% endif %}
+        </ul>
+        <a href="{% url 'character_list' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<!-- Main Character Sheet Layout -->
+<div class="row g-3 character-sheet">
+    <!-- Left Column: Ability Scores -->
+    <div class="col-lg-2">
+        <!-- Ability Scores -->
+        {% for ability, score, modifier in ability_data %}
+        <div class="ability-box">
+            <div class="text-uppercase mb-1" style="font-size: 0.85rem; font-weight: 600;">{{ ability }}</div>
+            <div class="ability-modifier mb-1">{{ modifier|stringformat:"+d" }}</div>
+            <div class="border rounded bg-light py-1">
+                <span class="ability-score">{{ score }}</span>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <!-- Proficiency Bonus -->
+        <div class="card mb-2">
+            <div class="card-body p-2">
+                <div class="mb-1" style="font-size: 0.85rem; font-weight: 600;">PROFICIENCY BONUS</div>
+                <div style="font-size: 1.5rem; font-weight: bold;">+{{ character.proficiency_bonus }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Skills Column -->
+    <div class="col-lg-2">
+        <div class="card h-100">
+            <div class="card-header p-2"><strong>SKILLS</strong></div>
+            <div class="card-body p-2 text-start">
+                {% for skill_name, skill_data in skill_bonuses.items %}
+                    <div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="font-size: 0.9rem;">
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="checkbox" {% if skill_data.proficient %}checked{% endif %} disabled>
+                            <label class="form-check-label {% if skill_data.proficient %}fw-bold{% endif %}">
+                                {{ skill_name }}
+                            </label>
+                        </div>
+                        <span class="badge bg-secondary">{{ skill_data.bonus|stringformat:"+d" }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Middle Column: Combat Stats -->
+    <div class="col-lg-5">
+        <!-- Top Row: AC, Initiative, Speed in compact boxes -->
+        <div class="row g-2 mb-2">
+            <div class="col-3">
+                <div class="border rounded p-2 text-center" style="background: #f8f9fa;">
+                    <h2 class="mb-0" style="font-size: 2.5rem; font-weight: bold;">{{ character.initiative|stringformat:"+d" }}</h2>
+                    <small style="font-size: 0.75rem; font-weight: 600;">INITIATIVE</small>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="border rounded p-2 text-center" style="background: #f8f9fa; border-width: 3px !important;">
+                    <h2 class="mb-0" style="font-size: 2.5rem; font-weight: bold;">{{ character.armor_class }}</h2>
+                    <small style="font-size: 0.75rem; font-weight: 600;">ARMOR CLASS</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <form method="post" action="{% url 'character_edit_combat' character.pk %}" class="h-100">
+                    {% csrf_token %}
+                    <input type="hidden" name="inspiration" value="{% if character.inspiration %}false{% else %}true{% endif %}">
+                    <button type="submit" class="btn {% if character.inspiration %}btn-warning{% else %}btn-outline-secondary{% endif %} w-100 h-100 d-flex align-items-center justify-content-center" style="font-size: 0.8rem; font-weight: 600;">
+                        <i class="fas fa-star me-2"></i> HEROIC INSPIRATION
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Rest Buttons -->
+        <div class="row g-2 mb-2">
+            <div class="col-6">
+                <form method="post" action="{% url 'short_rest' character.pk %}" class="rest-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-info w-100" style="font-size: 0.85rem;">
+                        <i class="fas fa-hourglass-half"></i> Short Rest
+                    </button>
+                </form>
+            </div>
+            <div class="col-6">
+                <form method="post" action="{% url 'long_rest' character.pk %}" class="rest-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-success w-100" style="font-size: 0.85rem;">
+                        <i class="fas fa-bed"></i> Long Rest
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Hit Dice Modal -->
+        <div class="modal fade" id="hitDiceModal" tabindex="-1" aria-labelledby="hitDiceModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="hitDiceModalLabel">Use Hit Dice</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="hitDiceMessage" class="mb-3"></p>
+                        <div class="mb-3">
+                            <label for="hitDiceCount" class="form-label">How many hit dice would you like to use?</label>
+                            <input type="number" class="form-control" id="hitDiceCount" min="0" value="1">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="confirmHitDice">Roll Hit Dice</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- HP, Hit Dice, and Resistances Section - Compact horizontal layout -->
+        <div class="row g-2 mb-2">
+            <div class="col-10">
+                <div class="card h-100">
+                    <div class="card-body p-2">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-2 text-center">
+                                <small class="d-block" style="font-size: 0.65rem; font-weight: 600;">Max HP</small>
+                                <h3 class="mb-0" style="font-weight: bold;">{{ character.max_hit_points }}</h3>
+                            </div>
+                            <div class="col-4">
+                                <form method="post" action="{% url 'character_edit_combat' character.pk %}">
+                                    {% csrf_token %}
+                                    <label class="form-label mb-0" style="font-size: 0.65rem; font-weight: 600;">Current HP</label>
+                                    <input type="number" name="current_hit_points" class="form-control form-control-sm text-center" 
+                                           value="{{ character.current_hit_points }}" min="0" max="{{ character.max_hit_points }}"
+                                           style="-moz-appearance: textfield; -webkit-appearance: none; appearance: none; font-size: 1.1rem; font-weight: bold;">
+                                    <button type="submit" class="btn btn-primary btn-sm w-100 mt-1" style="font-size: 0.65rem;">Update</button>
+                                </form>
+                            </div>
+                            <div class="col-4">
+                                <form method="post" action="{% url 'character_edit_combat' character.pk %}">
+                                    {% csrf_token %}
+                                    <label class="form-label mb-0" style="font-size: 0.65rem; font-weight: 600;">Temp HP</label>
+                                    <input type="number" name="temporary_hit_points" class="form-control form-control-sm text-center" 
+                                           value="{{ character.temporary_hit_points }}" min="0"
+                                           style="-moz-appearance: textfield; -webkit-appearance: none; appearance: none; font-size: 1.1rem; font-weight: bold;">
+                                    <button type="submit" class="btn btn-primary btn-sm w-100 mt-1" style="font-size: 0.65rem;">Update</button>
+                                </form>
+                            </div>
+                            <div class="col-2 text-center border-start">
+                                <small class="d-block mb-1" style="font-size: 0.65rem; font-weight: 600;">HIT POINTS</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="card h-100">
+                    <div class="card-body p-2">
+                        <div class="text-center mb-1">
+                            <small class="d-block" style="font-size: 0.65rem; font-weight: 600;">Available</small>
+                            <strong style="font-size: 0.95rem;">{{ character.available_hit_dice }}/{{ character.level }}d{% if character.character_class %}{{ character.character_class.hit_die }}{% else %}10{% endif %}</strong>
+                        </div>
+                        <div class="text-center border-top pt-1">
+                            <small style="font-size: 0.65rem; font-weight: 600;">HIT DICE</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Death Saves, Exhaustion, and Conditions Row -->
+        <div class="row g-2 mb-2">
+            <div class="col-7">
+                <div class="card">
+                    <div class="card-body p-2">
+                        <form method="post" action="{% url 'character_edit_combat' character.pk %}">
+                            {% csrf_token %}
+                            <div class="row g-2 mb-1">
+                                <div class="col-7">
+                                    <div class="d-flex justify-content-around">
+                                        <div class="text-center">
+                                            <small class="d-block" style="font-size: 0.65rem; font-weight: 600;">SUCCESSES</small>
+                                            <div class="d-flex gap-1">
+                                                {% for i in "123" %}
+                                                    <input class="form-check-input auto-submit" type="checkbox" name="death_save_successes_{{ forloop.counter }}"
+                                                           {% if forloop.counter <= character.death_save_successes %}checked{% endif %} 
+                                                           style="transform: scale(1.2); cursor: pointer;">
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="text-center">
+                                            <small class="d-block" style="font-size: 0.65rem; font-weight: 600;">FAILURES</small>
+                                            <div class="d-flex gap-1">
+                                                {% for i in "123" %}
+                                                    <input class="form-check-input auto-submit" type="checkbox" name="death_save_failures_{{ forloop.counter }}"
+                                                           {% if forloop.counter <= character.death_save_failures %}checked{% endif %}
+                                                           style="transform: scale(1.2); cursor: pointer;">
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-5 border-start">
+                                    <label class="form-label mb-0 text-center d-block" style="font-size: 0.65rem; font-weight: 600;">EXHAUSTION</label>
+                                    <select name="exhaustion_level" class="form-select form-select-sm text-center auto-submit" style="font-size: 0.85rem;">
+                                        {% for i in "0123456" %}
+                                            <option value="{{ forloop.counter0 }}" {% if character.exhaustion_level == forloop.counter0 %}selected{% endif %}>
+                                                {{ forloop.counter0 }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="text-center border-top pt-1">
+                                <small style="font-size: 0.7rem; font-weight: 600;">DEATH SAVES</small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-5">
+                <div class="card">
+                    <div class="card-body p-2">
+                        <form method="post" action="{% url 'character_edit_combat' character.pk %}">
+                            {% csrf_token %}
+                            <label class="form-label mb-1 text-center d-block" style="font-size: 0.7rem; font-weight: 600;">CONDITIONS</label>
+                            <textarea name="conditions" class="form-control form-control-sm" rows="1" 
+                                      placeholder="Status..." style="font-size: 0.85rem;">{{ character.conditions }}</textarea>
+                            <button type="submit" class="btn btn-secondary btn-sm w-100 mt-1" style="font-size: 0.65rem;">Update</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Proficiency Bonus, Speed, Immunities Row -->
+        <div class="row g-2 mb-2">
+            <div class="col-3">
+                <div class="border rounded p-2 text-center d-flex flex-column justify-content-center" style="background: #f8f9fa; min-height: 150px;">
+                    <h3 class="mb-0" style="font-weight: bold;">+4</h3>
+                    <small style="font-size: 0.7rem; font-weight: 600;">PROFICIENCY BONUS</small>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="border rounded p-2 text-center d-flex flex-column justify-content-center" style="background: #f8f9fa; min-height: 150px;">
+                    <h4 class="mb-0" style="font-weight: bold;">{{ character.speed }} ft (Walking)</h4>
+                    <small style="font-size: 0.7rem; font-weight: 600;">SPEED</small>
+                </div>
+            </div>
+            <div class="col-5">
+                <div class="border rounded p-2" style="background: #f8f9fa; min-height: 150px;">
+                    <small class="d-block text-center mb-1" style="font-size: 0.65rem;">Charmed, Disease, Frightened</small>
+                    <small class="d-block text-center border-top pt-1" style="font-size: 0.65rem; font-weight: 600; border-color: #dee2e6 !important;">IMMUNITIES</small>
+                    <hr class="my-2" style="border-top: 2px solid #dee2e6;">
+                    <small class="d-block text-center mb-1" style="font-size: 0.65rem;">Fire</small>
+                    <small class="d-block text-center border-top pt-1" style="font-size: 0.65rem; font-weight: 600; border-color: #dee2e6 !important;">RESISTANCES</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features & Traits -->
+        <div class="card mb-2">
+            <div class="card-header p-2"><strong>FEATURES & TRAITS</strong></div>
+            <div class="card-body p-2 text-start">
+                <!-- Class Features -->
+                {% if character.class_features.all %}
+                <div class="mb-3">
+                    <h6 class="mb-2" style="font-size: 0.9rem; font-weight: bold; color: #0d6efd;">Class Features:</h6>
+                    {% regroup character.class_features.all by feature_type as features_by_type %}
+                    {% for feature_group in features_by_type %}
+                    <div class="mb-2">
+                        <strong style="font-size: 0.85rem;">{{ feature_group.grouper }}:</strong>
+                        <ul class="mb-0" style="font-size: 0.85rem;">
+                            {% for feature in feature_group.list %}
+                            <li>
+                                <strong>{{ feature.feature_name }}</strong> (Level {{ feature.level_gained }})
+                                {% if feature.feature_description %}
+                                <br><small class="text-muted">{{ feature.feature_description }}</small>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- General Features & Traits -->
+                {% if character.features_and_traits %}
+                    <div class="mb-2">
+                        <h6 class="mb-2" style="font-size: 0.9rem; font-weight: bold;">Other Features:</h6>
+                        <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit; font-size: 0.85rem;">{{ character.features_and_traits }}</pre>
+                    </div>
+                {% endif %}
+                
+                {% if not character.class_features.all and not character.features_and_traits %}
+                    <p class="text-muted mb-0">No features or traits recorded.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Equipment -->
+        <div class="card">
+            <div class="card-header p-2"><strong>EQUIPMENT</strong></div>
+            <div class="card-body p-2 text-start">
+                {% if character.equipment %}
+                    <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit; font-size: 0.9rem;">{{ character.equipment }}</pre>
+                {% else %}
+                    <p class="text-muted mb-0">No equipment recorded.</p>
+                {% endif %}
+                <hr>
+                <div class="row text-center g-2">
+                    <div class="col">
+                        <strong style="font-size: 0.8rem;">CP</strong><br>
+                        <span class="badge bg-secondary">{{ character.copper_pieces }}</span>
+                    </div>
+                    <div class="col">
+                        <strong style="font-size: 0.8rem;">SP</strong><br>
+                        <span class="badge bg-secondary">{{ character.silver_pieces }}</span>
+                    </div>
+                    <div class="col">
+                        <strong style="font-size: 0.8rem;">EP</strong><br>
+                        <span class="badge bg-secondary">{{ character.electrum_pieces }}</span>
+                    </div>
+                    <div class="col">
+                        <strong style="font-size: 0.8rem;">GP</strong><br>
+                        <span class="badge bg-warning text-dark">{{ character.gold_pieces }}</span>
+                    </div>
+                    <div class="col">
+                        <strong style="font-size: 0.8rem;">PP</strong><br>
+                        <span class="badge bg-secondary">{{ character.platinum_pieces }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column: Character Details and Spells -->
+    <div class="col-lg-3">
+        <!-- Character Info -->
+        <div class="card mb-2">
+            <div class="card-header p-2"><strong>CHARACTER INFO</strong></div>
+            <div class="card-body p-2 text-start">
+                <div class="mb-2">
+                    <small class="text-muted" style="font-size: 0.85rem;">PLAYER NAME</small>
+                    <p class="mb-0" style="font-size: 0.95rem;">{{ character.player_name|default:"—" }}</p>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted" style="font-size: 0.85rem;">BACKGROUND</small>
+                    <p class="mb-0" style="font-size: 0.95rem;">{{ character.background.name }}</p>
+                </div>
+                <div class="mb-2">
+                    <small class="text-muted" style="font-size: 0.85rem;">ALIGNMENT</small>
+                    <p class="mb-0" style="font-size: 0.95rem;">{{ character.alignment|default:"—" }}</p>
+                </div>
+                <div class="mb-0">
+                    <small class="text-muted" style="font-size: 0.85rem;">EXPERIENCE POINTS</small>
+                    <p class="mb-0" style="font-size: 0.95rem;">{{ character.experience_points|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Personality -->
+        <div class="card mb-2">
+            <div class="card-header p-2"><strong>PERSONALITY</strong></div>
+            <div class="card-body p-2 text-start">
+                <div class="mb-2">
+                    <strong style="font-size: 0.85rem;">Traits:</strong>
+                    <p class="mb-0" style="font-size: 0.9rem;">{{ character.personality_traits|default:"—" }}</p>
+                </div>
+                <div class="mb-2">
+                    <strong style="font-size: 0.85rem;">Ideals:</strong>
+                    <p class="mb-0" style="font-size: 0.9rem;">{{ character.ideals|default:"—" }}</p>
+                </div>
+                <div class="mb-2">
+                    <strong style="font-size: 0.85rem;">Bonds:</strong>
+                    <p class="mb-0" style="font-size: 0.9rem;">{{ character.bonds|default:"—" }}</p>
+                </div>
+                <div>
+                    <strong style="font-size: 0.85rem;">Flaws:</strong>
+                    <p class="mb-0" style="font-size: 0.9rem;">{{ character.flaws|default:"—" }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Languages & Proficiencies -->
+        <div class="card mb-2">
+            <div class="card-header p-2"><strong>PROFICIENCIES & LANGUAGES</strong></div>
+            <div class="card-body p-2 text-start">
+                <div class="mb-2">
+                    <strong style="font-size: 0.85rem;">Languages:</strong>
+                    <p class="mb-0" style="font-size: 0.9rem;">{{ character.languages|default:"—" }}</p>
+                </div>
+                <div>
+                    <strong style="font-size: 0.85rem;">Tool Proficiencies:</strong>
+                    <p class="mb-0" style="font-size: 0.9rem;">{{ character.tool_proficiencies|default:"—" }}</p>
+                </div>
+            </div>
+        </div>
+        
+        {% if character.is_spellcaster %}
+        <!-- Spellcasting -->
+        <div class="card mb-1 border-primary">
+            <div class="card-header p-1 bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span style="font-size: 0.7rem;"><strong><i class="fas fa-magic"></i> SPELLCASTING</strong></span>
+                    <a href="{% url 'character_manage_spells' character.pk %}" class="btn btn-sm btn-light py-0" style="font-size: 0.65rem;">
+                        <i class="fas fa-edit"></i> Manage
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-1">
+                <!-- Spellcasting Stats -->
+                <div class="row text-center g-1 mb-1">
+                    <div class="col-4">
+                        <small class="text-muted d-block" style="font-size: 0.65rem;">Ability</small>
+                        <strong style="font-size: 0.75rem;">{{ character.get_spellcasting_ability_display|default:"—" }}</strong>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted d-block" style="font-size: 0.65rem;">Save DC</small>
+                        <strong style="font-size: 0.75rem;">{{ character.spell_save_dc|default:"N/A" }}</strong>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted d-block" style="font-size: 0.65rem;">Attack</small>
+                        <strong style="font-size: 0.75rem;">+{{ character.spell_attack_bonus|default:0 }}</strong>
+                    </div>
+                </div>
+
+                <!-- Spell Slots -->
+                <h6 class="border-top pt-1 mb-1" style="font-size: 0.75rem;"><strong>SPELL SLOTS</strong></h6>
+                {% if spell_slots %}
+                    <div class="row g-1 mb-1">
+                        {% for slot in spell_slots %}
+                            <div class="col-6">
+                                <div class="border rounded p-1 text-center">
+                                    <small class="text-muted d-block" style="font-size: 0.65rem;">L{{ slot.level }}</small>
+                                    <strong style="font-size: 0.75rem;" class="{% if slot.used >= slot.max %}text-danger{% elif slot.used > 0 %}text-warning{% else %}text-success{% endif %}">
+                                        {{ slot.available }}/{{ slot.max }}
+                                    </strong>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info p-1 mb-1" style="font-size: 0.7rem;">
+                        <i class="fas fa-info-circle"></i>
+                        <a href="{% url 'character_spell_slots' character.pk %}" class="alert-link">Configure spell slots</a>
+                    </div>
+                {% endif %}
+
+                <!-- Known Spells -->
+                {% if character.spells.exists %}
+                    <h6 class="border-top pt-1 mb-1" style="font-size: 0.75rem;"><strong>SPELLS</strong></h6>
+                    <div>
+                        {% regroup character.spells.all by spell.level as spell_list %}
+                        {% for spell_level in spell_list %}
+                            <div class="mb-1">
+                                <strong class="text-primary" style="font-size: 0.75rem;">
+                                    {% if spell_level.grouper == 0 %}
+                                        Cantrips
+                                    {% else %}
+                                        Level {{ spell_level.grouper }}
+                                    {% endif %}
+                                </strong>
+                                <ul class="list-unstyled ps-2 mb-0" style="font-size: 0.7rem;">
+                                    {% for char_spell in spell_level.list %}
+                                        <li class="small">
+                                            {{ char_spell.spell.name }}
+                                            {% if not char_spell.is_prepared %}
+                                                <span class="text-warning" title="Not prepared">⚪</span>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info p-2 mb-0 small">
+                        <i class="fas fa-info-circle"></i>
+                        <a href="{% url 'character_manage_spells' character.pk %}" class="alert-link">Add spells</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle auto-submit for select dropdowns and checkboxes with class 'auto-submit'
+    const autoSubmitElements = document.querySelectorAll('.auto-submit');
+    
+    autoSubmitElements.forEach(element => {
+        element.addEventListener('change', function() {
+            // Find the parent form and trigger submit
+            const form = this.closest('form');
+            if (form) {
+                // Create a custom event to trigger the form submission
+                const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                form.dispatchEvent(submitEvent);
+            }
+        });
+    });
+    
+    // Handle all combat forms with AJAX
+    const combatForms = document.querySelectorAll('form[action*="edit/combat"]');
+    
+    combatForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const url = form.action;
+            
+            // Check if this is an auto-submit form (death saves, exhaustion)
+            const isAutoSubmit = form.querySelector('.auto-submit');
+            
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success feedback
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    
+                    if (submitBtn) {
+                        // For forms with buttons
+                        const originalText = submitBtn.textContent;
+                        submitBtn.textContent = '✓ Saved';
+                        submitBtn.classList.remove('btn-primary', 'btn-secondary');
+                        submitBtn.classList.add('btn-success');
+                        
+                        setTimeout(() => {
+                            submitBtn.textContent = originalText;
+                            submitBtn.classList.remove('btn-success');
+                            submitBtn.classList.add('btn-primary');
+                        }, 1500);
+                    } else if (isAutoSubmit) {
+                        // For auto-submit forms (death saves, exhaustion)
+                        // Create a temporary success indicator
+                        const indicator = document.createElement('span');
+                        indicator.textContent = ' ✓';
+                        indicator.style.color = '#198754';
+                        indicator.style.fontWeight = 'bold';
+                        indicator.style.marginLeft = '5px';
+                        indicator.className = 'save-indicator';
+                        
+                        // Find the best place to show the indicator
+                        const label = form.querySelector('label, small[style*="font-weight: 600"]');
+                        if (label && !label.querySelector('.save-indicator')) {
+                            label.appendChild(indicator);
+                            setTimeout(() => {
+                                indicator.remove();
+                            }, 1500);
+                        }
+                    }
+                } else {
+                    alert(data.error || 'Error updating character. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating character. Please try again.');
+            });
+        });
+    });
+    
+    // Handle rest button forms with AJAX
+    const restForms = document.querySelectorAll('form.rest-form');
+    
+    console.log('Found rest forms:', restForms.length); // Debug log
+    
+    restForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Rest form submitted, prevented default'); // Debug log
+            
+            const url = form.action;
+            const isLongRest = url.includes('long-rest') || url.includes('long_rest');
+            const isShortRest = url.includes('short-rest') || url.includes('short_rest');
+            
+            console.log('Form URL:', url, 'isShortRest:', isShortRest, 'isLongRest:', isLongRest); // Debug log
+            
+            // For short rest, prompt for hit dice first
+            if (isShortRest) {
+                // First request to get available hit dice info
+                const formData = new FormData(form);
+                
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Server error');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Short rest response:', data); // Debug log
+                    
+                    if (data.prompt_for_dice) {
+                        // Show modal for hit dice selection
+                        const modal = new bootstrap.Modal(document.getElementById('hitDiceModal'));
+                        const messageElement = document.getElementById('hitDiceMessage');
+                        const inputElement = document.getElementById('hitDiceCount');
+                        const confirmButton = document.getElementById('confirmHitDice');
+                        
+                        // Set message and input max
+                        messageElement.textContent = data.message;
+                        inputElement.max = data.available_hit_dice;
+                        inputElement.value = Math.min(1, data.available_hit_dice);
+                        
+                        // Remove old event listeners and add new one
+                        const newConfirmButton = confirmButton.cloneNode(true);
+                        confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+                        
+                        newConfirmButton.addEventListener('click', function() {
+                            const hitDiceCount = inputElement.value;
+                            
+                            // Hide modal
+                            modal.hide();
+                            
+                            // Second request with hit dice count
+                            const formData2 = new FormData(form);
+                            formData2.append('hit_dice_count', hitDiceCount);
+                            
+                            fetch(url, {
+                                method: 'POST',
+                                body: formData2,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    return response.json().then(data => {
+                                        throw new Error(data.error || 'Server error');
+                                    });
+                                }
+                                return response.json();
+                            })
+                            .then(data2 => {
+                                console.log('Hit dice roll response:', data2); // Debug log
+                                
+                                if (data2.success) {
+                                    // Show success message with healing details
+                                    const submitBtn = form.querySelector('button[type="submit"]');
+                                    if (submitBtn) {
+                                        submitBtn.innerHTML = '✓ Short Rest Complete!';
+                                        submitBtn.classList.remove('btn-outline-info');
+                                        submitBtn.classList.add('btn-info');
+                                        
+                                        // Show detailed message
+                                        const tempDiv = document.createElement('div');
+                                        tempDiv.className = 'alert alert-success mt-2';
+                                        tempDiv.innerHTML = data2.message;
+                                        tempDiv.style.fontSize = '0.85rem';
+                                        submitBtn.parentElement.appendChild(tempDiv);
+                                        
+                                        setTimeout(() => {
+                                            if (data2.reload) {
+                                                console.log('Short rest complete, reloading...'); // Debug log
+                                                window.location.reload();
+                                            }
+                                        }, 2000);
+                                    }
+                                } else {
+                                    alert(data2.error || 'Error using hit dice. Please try again.');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Error performing short rest. Please try again.');
+                            });
+                        });
+                        
+                        // Show the modal
+                        modal.show();
+                    } else if (data.success) {
+                        handleRestSuccess(form, data, isLongRest);
+                    } else {
+                        alert(data.error || 'Error performing rest. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error performing short rest. Please try again.');
+                });
+            } else {
+                // Long rest - proceed normally
+                const formData = new FormData(form);
+                
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        handleRestSuccess(form, data, isLongRest);
+                    } else {
+                        alert(data.error || 'Error performing rest. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error performing rest. Please try again.');
+                });
+            }
+        });
+    });
+    
+    // Helper function to handle rest success
+    function handleRestSuccess(form, data, isLongRest) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            const originalHTML = submitBtn.innerHTML;
+            submitBtn.innerHTML = '✓ ' + (isLongRest ? 'Long Rest Complete!' : 'Short Rest Complete!');
+            submitBtn.classList.remove('btn-outline-info', 'btn-outline-success');
+            submitBtn.classList.add(isLongRest ? 'btn-success' : 'btn-info');
+            
+            console.log('Rest success, reload flag:', data.reload); // Debug log
+            
+            setTimeout(() => {
+                if (data.reload) {
+                    console.log('Reloading page...'); // Debug log
+                    window.location.reload();
+                } else {
+                    submitBtn.innerHTML = originalHTML;
+                    submitBtn.classList.remove('btn-success', 'btn-info');
+                    submitBtn.classList.add(isLongRest ? 'btn-outline-success' : 'btn-outline-info');
+                }
+            }, 1000);
+        }
+    }
+});
+</script>
+
+{% endblock %}

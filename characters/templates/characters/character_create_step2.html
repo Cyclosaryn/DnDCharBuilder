@@ -1,0 +1,547 @@
+{% extends 'characters/base.html' %}
+
+{% block title %}Create Character - Step 2{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="mb-4">Create Character - Step 2: Select Skills</h1>
+        
+        <div class="progress mb-4">
+            <div class="progress-bar" role="progressbar" style="width: 50%">Step 2 of 4</div>
+        </div>
+        
+        <div class="card mb-3">
+            <div class="card-header">
+                Character: {{ character.name }}
+            </div>
+            <div class="card-body">
+                <p><strong>Race:</strong> {{ character.race.name }} | <strong>Class:</strong> {{ character.character_class.name }} | <strong>Background:</strong> {{ character.background.name }}</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                Skill Proficiencies
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Skill Selection:</strong> Your class allows you to choose {{ character.character_class.num_skills }} skill(s).
+                    Your background provides: {{ character.background.skill_proficiencies }}
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check mb-2">
+                                {{ form.acrobatics }}
+                                <label class="form-check-label" for="{{ form.acrobatics.id_for_label }}">
+                                    Acrobatics <small class="text-muted">(DEX)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.animal_handling }}
+                                <label class="form-check-label" for="{{ form.animal_handling.id_for_label }}">
+                                    Animal Handling <small class="text-muted">(WIS)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.arcana }}
+                                <label class="form-check-label" for="{{ form.arcana.id_for_label }}">
+                                    Arcana <small class="text-muted">(INT)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.athletics }}
+                                <label class="form-check-label" for="{{ form.athletics.id_for_label }}">
+                                    Athletics <small class="text-muted">(STR)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.deception }}
+                                <label class="form-check-label" for="{{ form.deception.id_for_label }}">
+                                    Deception <small class="text-muted">(CHA)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.history }}
+                                <label class="form-check-label" for="{{ form.history.id_for_label }}">
+                                    History <small class="text-muted">(INT)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.insight }}
+                                <label class="form-check-label" for="{{ form.insight.id_for_label }}">
+                                    Insight <small class="text-muted">(WIS)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.intimidation }}
+                                <label class="form-check-label" for="{{ form.intimidation.id_for_label }}">
+                                    Intimidation <small class="text-muted">(CHA)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.investigation }}
+                                <label class="form-check-label" for="{{ form.investigation.id_for_label }}">
+                                    Investigation <small class="text-muted">(INT)</small>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-check mb-2">
+                                {{ form.medicine }}
+                                <label class="form-check-label" for="{{ form.medicine.id_for_label }}">
+                                    Medicine <small class="text-muted">(WIS)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.nature }}
+                                <label class="form-check-label" for="{{ form.nature.id_for_label }}">
+                                    Nature <small class="text-muted">(INT)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.perception }}
+                                <label class="form-check-label" for="{{ form.perception.id_for_label }}">
+                                    Perception <small class="text-muted">(WIS)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.performance }}
+                                <label class="form-check-label" for="{{ form.performance.id_for_label }}">
+                                    Performance <small class="text-muted">(CHA)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.persuasion }}
+                                <label class="form-check-label" for="{{ form.persuasion.id_for_label }}">
+                                    Persuasion <small class="text-muted">(CHA)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.religion }}
+                                <label class="form-check-label" for="{{ form.religion.id_for_label }}">
+                                    Religion <small class="text-muted">(INT)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.sleight_of_hand }}
+                                <label class="form-check-label" for="{{ form.sleight_of_hand.id_for_label }}">
+                                    Sleight of Hand <small class="text-muted">(DEX)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.stealth }}
+                                <label class="form-check-label" for="{{ form.stealth.id_for_label }}">
+                                    Stealth <small class="text-muted">(DEX)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.survival }}
+                                <label class="form-check-label" for="{{ form.survival.id_for_label }}">
+                                    Survival <small class="text-muted">(WIS)</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Rogue Expertise Selection -->
+                    {% if is_rogue and expertise_form %}
+                    <hr class="my-4">
+                    
+                    <h5 class="mb-3">Select Your Expertise (Rogue)</h5>
+                    <div class="alert alert-warning">
+                        <strong>Expertise:</strong> Choose 2 skills you are proficient in. Your proficiency bonus is doubled for ability checks using those skills.
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check mb-2">
+                                {{ expertise_form.acrobatics_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.acrobatics_expertise.id_for_label }}">
+                                    Acrobatics <small class="text-muted">(DEX)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.animal_handling_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.animal_handling_expertise.id_for_label }}">
+                                    Animal Handling <small class="text-muted">(WIS)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.arcana_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.arcana_expertise.id_for_label }}">
+                                    Arcana <small class="text-muted">(INT)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.athletics_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.athletics_expertise.id_for_label }}">
+                                    Athletics <small class="text-muted">(STR)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.deception_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.deception_expertise.id_for_label }}">
+                                    Deception <small class="text-muted">(CHA)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.history_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.history_expertise.id_for_label }}">
+                                    History <small class="text-muted">(INT)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.insight_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.insight_expertise.id_for_label }}">
+                                    Insight <small class="text-muted">(WIS)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.intimidation_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.intimidation_expertise.id_for_label }}">
+                                    Intimidation <small class="text-muted">(CHA)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.investigation_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.investigation_expertise.id_for_label }}">
+                                    Investigation <small class="text-muted">(INT)</small>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-check mb-2">
+                                {{ expertise_form.medicine_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.medicine_expertise.id_for_label }}">
+                                    Medicine <small class="text-muted">(WIS)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.nature_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.nature_expertise.id_for_label }}">
+                                    Nature <small class="text-muted">(INT)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.perception_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.perception_expertise.id_for_label }}">
+                                    Perception <small class="text-muted">(WIS)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.performance_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.performance_expertise.id_for_label }}">
+                                    Performance <small class="text-muted">(CHA)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.persuasion_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.persuasion_expertise.id_for_label }}">
+                                    Persuasion <small class="text-muted">(CHA)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.religion_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.religion_expertise.id_for_label }}">
+                                    Religion <small class="text-muted">(INT)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.sleight_of_hand_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.sleight_of_hand_expertise.id_for_label }}">
+                                    Sleight of Hand <small class="text-muted">(DEX)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.stealth_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.stealth_expertise.id_for_label }}">
+                                    Stealth <small class="text-muted">(DEX)</small>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.survival_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.survival_expertise.id_for_label }}">
+                                    Survival <small class="text-muted">(WIS)</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Level 1 Class Feature Selection (Cleric, Sorcerer, Warlock) -->
+                    {% if has_level1_feature %}
+                    <hr class="my-4">
+                    
+                    <h5 class="mb-3">Select Your {{ feature_data.name }}</h5>
+                    <div class="alert alert-primary">
+                        <strong>{{ feature_data.name }}:</strong> {{ feature_data.description }}
+                        <br><small>You must select {{ feature_data.num_choices }} option{% if feature_data.num_choices > 1 %}s{% endif %}.</small>
+                    </div>
+                    
+                    {% for i in "x"|ljust:feature_data.num_choices %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">{% if feature_data.num_choices > 1 %}Choice {{ forloop.counter }}{% else %}Selection{% endif %}</label>
+                        <select name="feature_choice_{{ forloop.counter0 }}" class="form-select feature-select" required data-choice-num="{{ forloop.counter0 }}">
+                            <option value="">-- Select {{ feature_data.name }} --</option>
+                            {% for option in feature_data.options %}
+                            <option value="{{ forloop.counter0 }}" data-has-sub="{% if option.has_sub_choice %}true{% else %}false{% endif %}">{{ option.name }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        <!-- Sub-choice selection (hidden by default) -->
+                        <div class="mt-3 sub-choice-container" id="sub_choice_container_{{ forloop.counter0 }}" style="display: none;">
+                            <label class="form-label">Select <span class="sub-choice-label"></span></label>
+                            <select name="sub_choice_{{ forloop.counter0 }}" class="form-select sub-choice-select">
+                                <option value="">-- Select Option --</option>
+                                {% for option in feature_data.options %}
+                                {% if option.has_sub_choice %}
+                                <optgroup label="{{ option.name }}" data-option-index="{{ forloop.counter0 }}" style="display: none;">
+                                    {% for sub_opt in option.sub_choice.options %}
+                                    <option value="{{ sub_opt.name }}">{{ sub_opt.name }}{% if sub_opt.damage_type %} ({{ sub_opt.damage_type }}){% endif %}</option>
+                                    {% endfor %}
+                                </optgroup>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Details for each option -->
+                        <div class="mt-2">
+                            {% for option in feature_data.options %}
+                            <div class="alert alert-info feature-option-detail" data-choice="{{ forloop.counter0 }}" data-choice-num="{{ forloop.parentloop.counter0 }}" style="display: none;">
+                                <h6>{{ option.name }}</h6>
+                                <p class="mb-1">{{ option.description }}</p>
+                                {% if option.has_sub_choice %}
+                                <p class="small text-primary mb-0"><strong>{{ option.sub_choice.name }}:</strong> {{ option.sub_choice.description }}</p>
+                                {% endif %}
+                                {% if option.prerequisite %}
+                                <p class="small text-muted mb-0"><strong>Prerequisite:</strong> {{ option.prerequisite }}</p>
+                                {% endif %}
+                                {% if option.bonus_proficiencies %}
+                                <p class="small text-success mb-0"><strong>Bonus Proficiencies:</strong> {{ option.bonus_proficiencies }}</p>
+                                {% endif %}
+                                {% if option.domain_spells %}
+                                <p class="small text-info mb-0"><strong>Domain Spells:</strong> You gain additional spells at certain levels</p>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'character_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Next: Add Details →</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Class feature selection display
+{% if has_level1_feature %}
+document.addEventListener('DOMContentLoaded', function() {
+    const featureSelects = document.querySelectorAll('.feature-select');
+    
+    featureSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const choiceNum = this.getAttribute('data-choice-num');
+            const selectedValue = this.value;
+            const selectedOption = this.options[this.selectedIndex];
+            const hasSub = selectedOption.getAttribute('data-has-sub') === 'true';
+            
+            // Hide all option details for this choice
+            const allDetails = document.querySelectorAll(`.feature-option-detail[data-choice-num="${choiceNum}"]`);
+            allDetails.forEach(detail => detail.style.display = 'none');
+            
+            // Show/hide sub-choice container
+            const subChoiceContainer = document.getElementById(`sub_choice_container_${choiceNum}`);
+            const subChoiceSelect = subChoiceContainer.querySelector('.sub-choice-select');
+            
+            if (hasSub && selectedValue !== '') {
+                // Show sub-choice container
+                subChoiceContainer.style.display = 'block';
+                
+                // Reset sub-choice select and show only relevant options
+                subChoiceSelect.selectedIndex = 0;
+                subChoiceSelect.required = true;
+                
+                // Hide all optgroups and show only the one for selected feature
+                const allOptgroups = subChoiceSelect.querySelectorAll('optgroup');
+                allOptgroups.forEach(group => {
+                    if (group.getAttribute('data-option-index') === selectedValue) {
+                        // Show options from this optgroup by moving them to root
+                        const options = Array.from(group.querySelectorAll('option'));
+                        options.forEach(opt => {
+                            opt.style.display = 'block';
+                            opt.disabled = false;
+                        });
+                        group.style.display = 'block';
+                    } else {
+                        group.style.display = 'none';
+                        Array.from(group.querySelectorAll('option')).forEach(opt => {
+                            opt.style.display = 'none';
+                            opt.disabled = true;
+                        });
+                    }
+                });
+                
+                // Update sub-choice label
+                const featureData = {{ feature_data_json|safe }};
+                if (featureData && featureData.options[selectedValue] && featureData.options[selectedValue].sub_choice) {
+                    const label = subChoiceContainer.querySelector('.sub-choice-label');
+                    label.textContent = featureData.options[selectedValue].sub_choice.name;
+                }
+            } else {
+                // Hide sub-choice container
+                subChoiceContainer.style.display = 'none';
+                subChoiceSelect.required = false;
+            }
+            
+            // Show the selected option's details
+            if (selectedValue !== '') {
+                const selectedDetail = document.querySelector(`.feature-option-detail[data-choice-num="${choiceNum}"][data-choice="${selectedValue}"]`);
+                if (selectedDetail) {
+                    selectedDetail.style.display = 'block';
+                }
+            }
+        });
+    });
+});
+{% endif %}
+
+// Skill proficiency selection limit
+document.addEventListener('DOMContentLoaded', function() {
+    const maxSkills = {{ character.character_class.num_skills }};
+    // Select all skill checkboxes (exclude expertise checkboxes)
+    const skillCheckboxes = document.querySelectorAll('input[type="checkbox"][id^="id_"]:not([id*="_expertise"])');
+    const skillCheckboxesArray = Array.from(skillCheckboxes);
+    
+    console.log('Skill limit validation initialized');
+    console.log('Max skills allowed:', maxSkills);
+    console.log('Found skill checkboxes:', skillCheckboxesArray.length);
+    
+    function updateSkillCheckboxes() {
+        const checkedCount = skillCheckboxesArray.filter(cb => cb.checked).length;
+        let messageDiv = document.getElementById('skill-limit-message');
+        
+        console.log('Skills checked:', checkedCount, '/', maxSkills);
+        
+        if (!messageDiv) {
+            const alertDiv = document.createElement('div');
+            alertDiv.id = 'skill-limit-message';
+            alertDiv.className = 'alert alert-info mt-2 mb-3';
+            alertDiv.style.display = 'none';
+            const form = document.querySelector('.card-body form');
+            const firstRow = form.querySelector('.row');
+            if (firstRow) {
+                form.insertBefore(alertDiv, firstRow);
+            }
+            messageDiv = alertDiv;
+        }
+        
+        if (checkedCount >= maxSkills) {
+            messageDiv.innerHTML = `<strong>Limit Reached:</strong> You have selected ${checkedCount} of ${maxSkills} allowed skill(s).`;
+            messageDiv.style.display = 'block';
+            messageDiv.className = 'alert alert-warning mt-2 mb-3';
+            
+            // Disable unchecked boxes
+            skillCheckboxesArray.forEach(cb => {
+                if (!cb.checked) {
+                    cb.disabled = true;
+                    cb.dataset.skillLimitDisabled = 'true';
+                }
+            });
+        } else {
+            messageDiv.innerHTML = `<strong>Skills Selected:</strong> ${checkedCount} of ${maxSkills}`;
+            messageDiv.style.display = 'block';
+            messageDiv.className = 'alert alert-info mt-2 mb-3';
+            
+            // Re-enable boxes that were disabled by skill limit
+            skillCheckboxesArray.forEach(cb => {
+                if (cb.dataset.skillLimitDisabled === 'true') {
+                    cb.disabled = false;
+                    delete cb.dataset.skillLimitDisabled;
+                }
+            });
+        }
+    }
+    
+    skillCheckboxesArray.forEach(cb => {
+        cb.addEventListener('change', updateSkillCheckboxes);
+    });
+    
+    // Run initial check
+    updateSkillCheckboxes();
+});
+
+{% if is_rogue %}
+// Expertise selection limit
+document.addEventListener('DOMContentLoaded', function() {
+    const maxExpertise = 2;
+    const expertiseCheckboxes = document.querySelectorAll('input[type="checkbox"][id*="_expertise"]');
+    
+    function updateExpertiseCheckboxes() {
+        const checkedCount = Array.from(expertiseCheckboxes).filter(cb => cb.checked && !cb.disabled).length;
+        const messageDiv = document.getElementById('expertise-limit-message');
+        
+        if (!messageDiv) {
+            const alertDiv = document.createElement('div');
+            alertDiv.id = 'expertise-limit-message';
+            alertDiv.className = 'alert alert-info mt-2';
+            alertDiv.style.display = 'none';
+            const expertiseSection = document.querySelector('.card-body form').querySelector('h5:last-of-type');
+            if (expertiseSection && expertiseSection.nextElementSibling) {
+                expertiseSection.parentNode.insertBefore(alertDiv, expertiseSection.nextElementSibling.nextElementSibling);
+            }
+        }
+        
+        const msg = document.getElementById('expertise-limit-message');
+        
+        if (checkedCount >= maxExpertise) {
+            msg.innerHTML = `<strong>Limit Reached:</strong> You have selected ${checkedCount} of ${maxExpertise} expertise skill(s).`;
+            msg.style.display = 'block';
+            msg.className = 'alert alert-warning mt-2 mb-3';
+            
+            // Disable unchecked boxes
+            expertiseCheckboxes.forEach(cb => {
+                if (!cb.checked && !cb.disabled) {
+                    cb.disabled = true;
+                    cb.dataset.temporarilyDisabled = 'true';
+                }
+            });
+        } else {
+            msg.innerHTML = `<strong>Expertise Selected:</strong> ${checkedCount} of ${maxExpertise}`;
+            msg.style.display = 'block';
+            msg.className = 'alert alert-info mt-2 mb-3';
+            
+            // Re-enable temporarily disabled boxes
+            expertiseCheckboxes.forEach(cb => {
+                if (cb.dataset.temporarilyDisabled === 'true') {
+                    cb.disabled = false;
+                    delete cb.dataset.temporarilyDisabled;
+                }
+            });
+        }
+    }
+    
+    expertiseCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateExpertiseCheckboxes);
+    });
+    
+    updateExpertiseCheckboxes();
+});
+{% endif %}
+</script>
+
+{% endblock %}

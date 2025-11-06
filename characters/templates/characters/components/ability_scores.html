@@ -1,0 +1,18 @@
+<!-- Ability Scores -->
+{% for ability, score, modifier in ability_data %}
+<div class="ability-box">
+    <div class="text-uppercase mb-1" style="font-size: 0.85rem; font-weight: 600;">{{ ability }}</div>
+    <div class="ability-modifier mb-1">{{ modifier|stringformat:"+d" }}</div>
+    <div class="border rounded bg-light py-1">
+        <span class="ability-score">{{ score }}</span>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Proficiency Bonus -->
+<div class="card mb-2">
+    <div class="card-body p-2">
+        <div class="mb-1" style="font-size: 0.85rem; font-weight: 600;">PROFICIENCY BONUS</div>
+        <div style="font-size: 1.5rem; font-weight: bold;">+{{ character.proficiency_bonus }}</div>
+    </div>
+</div>

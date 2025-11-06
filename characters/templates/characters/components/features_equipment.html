@@ -1,0 +1,136 @@
+{% load equipment_filters %}
+
+<!-- Features & Traits -->
+<div class="card mb-2">
+    <div class="card-header p-2"><strong>FEATURES & TRAITS</strong></div>
+    <div class="card-body p-2 text-start">
+        <!-- Class Features -->
+        {% if character.class_features.all %}
+        <div class="mb-3">
+            <h6 class="mb-2" style="font-size: 0.9rem; font-weight: bold; color: #0d6efd;">Class Features:</h6>
+            {% regroup character.class_features.all by feature_type as features_by_type %}
+            {% for feature_group in features_by_type %}
+            <div class="mb-2">
+                <strong style="font-size: 0.85rem;">{{ feature_group.grouper }}:</strong>
+                <div class="ms-2">
+                    {% for feature in feature_group.list %}
+                    <div class="mb-1">
+                        <strong>{{ feature.feature_name }}</strong>{% if feature.sub_choice %} <span class="text-primary">({{ feature.sub_choice }})</span>{% endif %} (Level {{ feature.level_gained }})
+                        {% if feature.feature_description %}
+                        <br><small class="text-muted">{{ feature.feature_description }}</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- General Features & Traits -->
+        {% if character.features_and_traits %}
+            <div class="mb-2">
+                <h6 class="mb-2" style="font-size: 0.9rem; font-weight: bold;">Other Features:</h6>
+                <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit; font-size: 0.85rem;">{{ character.features_and_traits }}</pre>
+            </div>
+        {% endif %}
+        
+        {% if not character.class_features.all and not character.features_and_traits %}
+            <p class="text-muted mb-0">No features or traits recorded.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Equipment -->
+<div class="card">
+    <div class="card-header p-2"><strong>EQUIPMENT</strong></div>
+    <div class="card-body p-2 text-start">
+        {% if character.equipment_items.exists %}
+            {% regroup character.equipment_items.all by category as equipment_by_category %}
+            {% for category in equipment_by_category %}
+                <div class="mb-2">
+                    <strong class="text-primary" style="font-size: 0.85rem;">
+                        <i class="fas {% if category.grouper == 'Weapon' %}fa-gavel{% elif category.grouper == 'Armor' %}fa-shield-alt{% else %}fa-box{% endif %}"></i>
+                        {{ category.grouper }}
+                    </strong>
+                    <ul class="list-unstyled ps-2 mb-0" style="font-size: 0.8rem;">
+                        {% for item in category.list %}
+                            <li class="small mb-1">
+                                <span class="equipment-clickable"
+                                      data-bs-toggle="tooltip"
+                                      data-bs-html="true"
+                                      data-bs-placement="left"
+                                      data-equipment-id="{{ item.id }}"
+                                      title="<div class='equipment-tooltip-detail'>
+                                               <strong>{{ item.name }}</strong><br>
+                                               <em>{{ item.category }}</em><br>
+                                               {% with damage=item.get_damage_info ac=item.get_armor_class %}
+                                               {% if damage %}
+                                               <strong class='text-danger'><i class='fas fa-fire'></i> Damage:</strong> {{ damage }}<br>
+                                               {% endif %}
+                                               {% if ac %}
+                                               <strong class='text-primary'><i class='fas fa-shield-alt'></i> AC:</strong> {{ ac }}<br>
+                                               {% endif %}
+                                               {% endwith %}
+                                               <strong>Weight:</strong> {{ item.weight }} lbs<br>
+                                               <strong>Cost:</strong> {{ item.cost_gold }} gp<br>
+                                               <hr style='margin: 5px 0; border-color: rgba(255,255,255,0.3);'>
+                                               <small style='font-size: 0.75rem;'>Click for full details</small>
+                                             </div>">
+                                    {{ item.name }}
+                                    {% if item.category == 'Weapon' %}
+                                        {% with damage=item.get_damage_info %}
+                                        {% if damage %}
+                                        <span class="text-muted" style="font-size: 0.7rem;">({{ damage }})</span>
+                                        {% endif %}
+                                        {% endwith %}
+                                    {% endif %}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% if character.equipment and character.equipment|length > 0 %}
+            {% with filtered_equipment=character.equipment|filter_equipment_text:character.equipment_items.all %}
+            {% if filtered_equipment %}
+                {% if character.equipment_items.exists %}
+                <hr>
+                <h6 class="mb-2" style="font-size: 0.85rem;"><strong>Other Equipment:</strong></h6>
+                {% endif %}
+                <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit; font-size: 0.8rem;">{{ filtered_equipment }}</pre>
+            {% endif %}
+            {% endwith %}
+        {% endif %}
+        
+        {% if not character.equipment_items.exists and not character.equipment %}
+            <p class="text-muted mb-0" style="font-size: 0.85rem;">No equipment recorded.</p>
+        {% endif %}
+        
+        <hr>
+        <div class="row text-center g-2">
+            <div class="col">
+                <strong style="font-size: 0.8rem;">CP</strong><br>
+                <span class="badge bg-secondary">{{ character.copper_pieces }}</span>
+            </div>
+            <div class="col">
+                <strong style="font-size: 0.8rem;">SP</strong><br>
+                <span class="badge bg-secondary">{{ character.silver_pieces }}</span>
+            </div>
+            <div class="col">
+                <strong style="font-size: 0.8rem;">EP</strong><br>
+                <span class="badge bg-secondary">{{ character.electrum_pieces }}</span>
+            </div>
+            <div class="col">
+                <strong style="font-size: 0.8rem;">GP</strong><br>
+                <span class="badge bg-warning text-dark">{{ character.gold_pieces }}</span>
+            </div>
+            <div class="col">
+                <strong style="font-size: 0.8rem;">PP</strong><br>
+                <span class="badge bg-secondary">{{ character.platinum_pieces }}</span>
+            </div>
+        </div>
+    </div>
+</div>

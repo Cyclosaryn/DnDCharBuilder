@@ -1,0 +1,579 @@
+{% extends 'characters/base.html' %}
+
+{% block title %}Create Character - Step 1{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="mb-4">Create Character - Step 1: Basic Information</h1>
+        
+        <div class="progress mb-4">
+            <div class="progress-bar" role="progressbar" style="width: 25%">Step 1 of 4</div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                Character Basics & Ability Scores
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.name.label }}</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="text-danger">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.player_name.label }}</label>
+                            {{ form.player_name }}
+                            {% if form.player_name.errors %}
+                                <div class="text-danger">{{ form.player_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.race.label }}</label>
+                            {{ form.race }}
+                            <div id="race-info" class="info-box mt-2" style="display: none;">
+                                <small class="text-muted">
+                                    <strong class="info-title"></strong>
+                                    <div class="info-description"></div>
+                                    <div class="info-bonuses"></div>
+                                </small>
+                            </div>
+                            {% if form.race.errors %}
+                                <div class="text-danger">{{ form.race.errors }}</div>
+                            {% endif %}
+                            
+                            <!-- Subrace Selection -->
+                            <div id="subrace-container" class="mt-3" style="display: none;">
+                                <label class="form-label">Subrace</label>
+                                <select name="subrace" id="id_subrace" class="form-select">
+                                    <option value="">Select Subrace...</option>
+                                </select>
+                                <div id="subrace-info" class="info-box mt-2" style="display: none;">
+                                    <small class="text-muted">
+                                        <strong class="subrace-title"></strong>
+                                        <div class="subrace-description"></div>
+                                        <div class="subrace-bonuses"></div>
+                                        <div class="subrace-traits"></div>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.character_class.label }}</label>
+                            {{ form.character_class }}
+                            <div id="class-info" class="info-box mt-2" style="display: none;">
+                                <small class="text-muted">
+                                    <strong class="info-title"></strong>
+                                    <div class="info-description"></div>
+                                    <div class="info-details"></div>
+                                </small>
+                            </div>
+                            {% if form.character_class.errors %}
+                                <div class="text-danger">{{ form.character_class.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.background.label }}</label>
+                            {{ form.background }}
+                            <div id="background-info" class="info-box mt-2" style="display: none;">
+                                <small class="text-muted">
+                                    <strong class="info-title"></strong>
+                                    <div class="info-description"></div>
+                                    <div class="info-feature"></div>
+                                </small>
+                            </div>
+                            {% if form.background.errors %}
+                                <div class="text-danger">{{ form.background.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.alignment.label }}</label>
+                        {{ form.alignment }}
+                        <div id="alignment-info" class="info-box info-box-small mt-2" style="display: none;">
+                            <small class="text-muted">
+                                <strong class="info-title"></strong>
+                                <div class="info-description"></div>
+                            </small>
+                        </div>
+                        {% if form.alignment.errors %}
+                            <div class="text-danger">{{ form.alignment.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5 class="mb-3">Ability Scores</h5>
+                    <p class="text-muted">
+                        Enter your base ability scores (before racial bonuses). Standard Array: 15, 14, 13, 12, 10, 8
+                    </p>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.strength.label }}</label>
+                            {{ form.strength }}
+                            <small class="text-muted d-block">{{ form.strength.help_text }}</small>
+                            {% if form.strength.errors %}
+                                <div class="text-danger">{{ form.strength.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.dexterity.label }}</label>
+                            {{ form.dexterity }}
+                            <small class="text-muted d-block">{{ form.dexterity.help_text }}</small>
+                            {% if form.dexterity.errors %}
+                                <div class="text-danger">{{ form.dexterity.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.constitution.label }}</label>
+                            {{ form.constitution }}
+                            <small class="text-muted d-block">{{ form.constitution.help_text }}</small>
+                            {% if form.constitution.errors %}
+                                <div class="text-danger">{{ form.constitution.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.intelligence.label }}</label>
+                            {{ form.intelligence }}
+                            <small class="text-muted d-block">{{ form.intelligence.help_text }}</small>
+                            {% if form.intelligence.errors %}
+                                <div class="text-danger">{{ form.intelligence.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.wisdom.label }}</label>
+                            {{ form.wisdom }}
+                            <small class="text-muted d-block">{{ form.wisdom.help_text }}</small>
+                            {% if form.wisdom.errors %}
+                                <div class="text-danger">{{ form.wisdom.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.charisma.label }}</label>
+                            {{ form.charisma }}
+                            <small class="text-muted d-block">{{ form.charisma.help_text }}</small>
+                            {% if form.charisma.errors %}
+                                <div class="text-danger">{{ form.charisma.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'character_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Next: Select Skills →</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    <h6>💡 Need Help Choosing?</h6>
+                    <p class="mb-1">
+                        <a href="{% url 'race_list' %}" target="_blank">View all Races</a> • 
+                        <a href="{% url 'class_list' %}" target="_blank">View all Classes</a> • 
+                        <a href="{% url 'background_list' %}" target="_blank">View all Backgrounds</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Info Modal -->
+<div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="infoModalLabel">Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="infoModalBody">
+                <!-- Content will be inserted here by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .info-box {
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-left: 3px solid var(--dnd-red);
+        border-radius: 4px;
+        min-height: 150px;
+        max-height: 150px;
+        overflow: hidden;
+        position: relative;
+    }
+    .info-box-small {
+        min-height: 100px;
+        max-height: 100px;
+    }
+    .info-box .info-title {
+        color: var(--dnd-red);
+        display: block;
+        margin-bottom: 5px;
+    }
+    .info-box .info-description {
+        margin-bottom: 8px;
+    }
+    .info-box .info-bonuses,
+    .info-box .info-details,
+    .info-box .info-feature,
+    .info-box .subrace-description,
+    .info-box .subrace-bonuses,
+    .info-box .subrace-traits {
+        font-size: 0.85em;
+        color: #555;
+    }
+    .info-box .subrace-title {
+        color: var(--dnd-red);
+        display: block;
+        margin-bottom: 5px;
+    }
+    .info-box .subrace-description {
+        margin-bottom: 8px;
+    }
+    .info-box .more-link {
+        color: var(--dnd-red);
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .info-box .more-link:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Data for races, classes, and backgrounds
+    const raceData = {
+        {% for race in races %}
+        "{{ race.id }}": {
+            "name": "{{ race.name|escapejs }}",
+            "description": "{{ race.description|escapejs }}",
+            "bonuses": "Size: {{ race.size }}, Speed: {{ race.speed }} ft{% if race.strength_bonus > 0 %}, +{{ race.strength_bonus }} STR{% endif %}{% if race.dexterity_bonus > 0 %}, +{{ race.dexterity_bonus }} DEX{% endif %}{% if race.constitution_bonus > 0 %}, +{{ race.constitution_bonus }} CON{% endif %}{% if race.intelligence_bonus > 0 %}, +{{ race.intelligence_bonus }} INT{% endif %}{% if race.wisdom_bonus > 0 %}, +{{ race.wisdom_bonus }} WIS{% endif %}{% if race.charisma_bonus > 0 %}, +{{ race.charisma_bonus }} CHA{% endif %}",
+            "link": "{% url 'race_list' %}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    };
+    
+    // Subrace data from server
+    const subraceData = {{ subrace_data|safe }};
+
+    const classData = {
+        {% for class in classes %}
+        "{{ class.id }}": {
+            "name": "{{ class.name|escapejs }}",
+            "description": "{{ class.description|escapejs }}",
+            "details": "Hit Die: d{{ class.hit_die }}, Primary: {{ class.primary_ability|escapejs }}, Skills: Choose {{ class.num_skills }}",
+            "link": "{% url 'class_list' %}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    };
+
+    const backgroundData = {
+        {% for bg in backgrounds %}
+        "{{ bg.id }}": {
+            "name": "{{ bg.name|escapejs }}",
+            "description": "{{ bg.description|escapejs }}",
+            "feature": "Feature: {{ bg.feature|escapejs }}, Skills: {{ bg.skill_proficiencies|escapejs }}",
+            "link": "{% url 'background_list' %}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    };
+
+    const alignmentData = {
+        "Lawful Good": {
+            "name": "Lawful Good",
+            "description": "Creatures that can be counted on to do the right thing as expected by society. Gold dragons, paladins, and most dwarves are lawful good.",
+            "link": "#"
+        },
+        "Neutral Good": {
+            "name": "Neutral Good",
+            "description": "Folk who do the best they can to help others according to their needs. Many celestials, some cloud giants, and most gnomes are neutral good.",
+            "link": "#"
+        },
+        "Chaotic Good": {
+            "name": "Chaotic Good",
+            "description": "Creatures that act as their conscience directs, with little regard for what others expect. Copper dragons, many elves, and unicorns are chaotic good.",
+            "link": "#"
+        },
+        "Lawful Neutral": {
+            "name": "Lawful Neutral",
+            "description": "Individuals who act in accordance with law, tradition, or personal codes. Many monks and some wizards are lawful neutral.",
+            "link": "#"
+        },
+        "True Neutral": {
+            "name": "True Neutral",
+            "description": "Those who prefer to steer clear of moral questions and don't take sides, doing what seems best at the time. Lizardfolk, most druids, and many humans are neutral.",
+            "link": "#"
+        },
+        "Chaotic Neutral": {
+            "name": "Chaotic Neutral",
+            "description": "Creatures that follow their whims, holding their personal freedom above all else. Many barbarians and rogues, and some bards, are chaotic neutral.",
+            "link": "#"
+        },
+        "Lawful Evil": {
+            "name": "Lawful Evil",
+            "description": "Creatures that methodically take what they want, within the limits of a code of tradition, loyalty, or order. Devils, blue dragons, and hobgoblins are lawful evil.",
+            "link": "#"
+        },
+        "Neutral Evil": {
+            "name": "Neutral Evil",
+            "description": "Those who do whatever they can get away with, without compassion or qualms. Many drow, some cloud giants, and yugoloths are neutral evil.",
+            "link": "#"
+        },
+        "Chaotic Evil": {
+            "name": "Chaotic Evil",
+            "description": "Creatures that act with arbitrary violence, spurred by their greed, hatred, or bloodlust. Demons, red dragons, and orcs are chaotic evil.",
+            "link": "#"
+        }
+    };
+
+    // Function to truncate text and add [more...] link
+    function truncateText(text, maxLength) {
+        if (text.length <= maxLength) {
+            return text;
+        }
+        // Find last space before maxLength to avoid cutting words
+        let truncateAt = text.lastIndexOf(' ', maxLength);
+        if (truncateAt === -1) truncateAt = maxLength;
+        return text.substring(0, truncateAt);
+    }
+
+    // Function to show modal with full info
+    function showModal(info) {
+        const modalTitle = document.getElementById('infoModalLabel');
+        const modalBody = document.getElementById('infoModalBody');
+        
+        modalTitle.textContent = info.name;
+        
+        let content = `<p><strong>Description:</strong><br>${info.description}</p>`;
+        
+        if (info.bonuses) {
+            content += `<p><strong>Bonuses/Traits:</strong><br>${info.bonuses}</p>`;
+        }
+        if (info.traits) {
+            content += `<p><strong>Additional Traits:</strong><br>${info.traits}</p>`;
+        }
+        if (info.details) {
+            content += `<p><strong>Details:</strong><br>${info.details}</p>`;
+        }
+        if (info.feature) {
+            content += `<p><strong>Feature:</strong><br>${info.feature}</p>`;
+        }
+        
+        modalBody.innerHTML = content;
+        
+        const modal = new bootstrap.Modal(document.getElementById('infoModal'));
+        modal.show();
+    }
+
+    // Function to show info box
+    function showInfo(selectId, infoBoxId, data, linkType = '') {
+        const select = document.getElementById(selectId);
+        const infoBox = document.getElementById(infoBoxId);
+        
+        select.addEventListener('change', function() {
+            const selectedValue = this.value;
+            if (selectedValue && data[selectedValue]) {
+                const info = data[selectedValue];
+                const titleEl = infoBox.querySelector('.info-title');
+                const descEl = infoBox.querySelector('.info-description');
+                const extraEl = infoBox.querySelector('.info-bonuses, .info-details, .info-feature');
+                
+                titleEl.textContent = info.name;
+                
+                // Truncate description to fit in box (adjust length based on content type)
+                let maxDescLength = 150;
+                const needsMore = info.description.length > maxDescLength;
+                
+                if (needsMore) {
+                    const truncatedDesc = truncateText(info.description, maxDescLength);
+                    descEl.innerHTML = truncatedDesc + '... <a href="#" class="more-link" data-info-type="' + selectId + '">[more...]</a>';
+                } else {
+                    descEl.textContent = info.description;
+                }
+                
+                if (extraEl) {
+                    if (info.bonuses) {
+                        const maxBonusLength = 100;
+                        if (info.bonuses.length > maxBonusLength) {
+                            const truncated = truncateText(info.bonuses, maxBonusLength);
+                            extraEl.innerHTML = truncated + '... <a href="#" class="more-link" data-info-type="' + selectId + '">[more...]</a>';
+                        } else {
+                            extraEl.textContent = info.bonuses;
+                        }
+                    }
+                    if (info.details) {
+                        extraEl.textContent = info.details;
+                    }
+                    if (info.feature) {
+                        const maxFeatureLength = 100;
+                        if (info.feature.length > maxFeatureLength) {
+                            const truncated = truncateText(info.feature, maxFeatureLength);
+                            extraEl.innerHTML = truncated + '... <a href="#" class="more-link" data-info-type="' + selectId + '">[more...]</a>';
+                        } else {
+                            extraEl.textContent = info.feature;
+                        }
+                    }
+                }
+                
+                // Add click event to [more...] links
+                infoBox.querySelectorAll('.more-link').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        showModal(info);
+                    });
+                });
+                
+                infoBox.style.display = 'block';
+            } else {
+                infoBox.style.display = 'none';
+            }
+        });
+        
+        // Trigger change event if there's already a selected value
+        if (select.value) {
+            select.dispatchEvent(new Event('change'));
+        }
+    }
+
+    // Initialize info boxes when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        showInfo('id_race', 'race-info', raceData);
+        showInfo('id_character_class', 'class-info', classData);
+        showInfo('id_background', 'background-info', backgroundData);
+        showInfo('id_alignment', 'alignment-info', alignmentData);
+        
+        // Handle subrace selection
+        const raceSelect = document.getElementById('id_race');
+        const subraceContainer = document.getElementById('subrace-container');
+        const subraceSelect = document.getElementById('id_subrace');
+        const subraceInfo = document.getElementById('subrace-info');
+        
+        raceSelect.addEventListener('change', function() {
+            const selectedRaceId = this.value;
+            const selectedRace = raceData[selectedRaceId];
+            
+            if (selectedRace && subraceData[selectedRace.name]) {
+                // Show subrace dropdown
+                subraceContainer.style.display = 'block';
+                
+                // Populate subrace options
+                subraceSelect.innerHTML = '<option value="">Select Subrace...</option>';
+                subraceData[selectedRace.name].forEach(subrace => {
+                    const option = document.createElement('option');
+                    option.value = subrace.name;
+                    option.textContent = subrace.name;
+                    option.dataset.description = subrace.description;
+                    option.dataset.bonuses = JSON.stringify(subrace.ability_bonuses);
+                    option.dataset.traits = JSON.stringify(subrace.traits);
+                    subraceSelect.appendChild(option);
+                });
+            } else {
+                // Hide subrace dropdown
+                subraceContainer.style.display = 'none';
+                subraceInfo.style.display = 'none';
+            }
+        });
+        
+        // Handle subrace info display
+        subraceSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            
+            if (this.value && selectedOption) {
+                const description = selectedOption.dataset.description;
+                const bonuses = JSON.parse(selectedOption.dataset.bonuses);
+                const traits = JSON.parse(selectedOption.dataset.traits);
+                
+                const titleEl = subraceInfo.querySelector('.subrace-title');
+                const descEl = subraceInfo.querySelector('.subrace-description');
+                const bonusesEl = subraceInfo.querySelector('.subrace-bonuses');
+                const traitsEl = subraceInfo.querySelector('.subrace-traits');
+                
+                titleEl.textContent = selectedOption.value;
+                
+                // Format ability bonuses
+                let bonusText = 'Ability Bonuses: ';
+                const bonusEntries = Object.entries(bonuses);
+                bonusText += bonusEntries.map(([ability, bonus]) => {
+                    return `+${bonus} ${ability.toUpperCase()}`;
+                }).join(', ');
+                
+                // Format traits
+                const traitsText = 'Traits: ' + traits.join('; ');
+                
+                // Create full info object for modal
+                const subraceFullInfo = {
+                    name: selectedOption.value,
+                    description: description,
+                    bonuses: bonusText,
+                    traits: traitsText
+                };
+                
+                // Truncate description - use shorter length for subrace since we have more content
+                const maxDescLength = 80;
+                const needsMoreDesc = description.length > maxDescLength;
+                
+                if (needsMoreDesc) {
+                    const truncatedDesc = truncateText(description, maxDescLength);
+                    descEl.innerHTML = truncatedDesc + '... <a href="#" class="more-link">[more...]</a>';
+                } else {
+                    descEl.textContent = description;
+                }
+                
+                bonusesEl.textContent = bonusText;
+                
+                // Truncate traits - also use shorter length
+                const maxTraitsLength = 60;
+                
+                if (traitsText.length > maxTraitsLength) {
+                    const truncated = truncateText(traitsText, maxTraitsLength);
+                    traitsEl.innerHTML = truncated + '... <a href="#" class="more-link">[more...]</a>';
+                } else {
+                    traitsEl.textContent = traitsText;
+                }
+                
+                // Add click event to [more...] links for subrace
+                subraceInfo.querySelectorAll('.more-link').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        showModal(subraceFullInfo);
+                    });
+                });
+                
+                subraceInfo.style.display = 'block';
+            } else {
+                subraceInfo.style.display = 'none';
+            }
+        });
+        
+        // Trigger change if race is already selected
+        if (raceSelect.value) {
+            raceSelect.dispatchEvent(new Event('change'));
+        }
+    });
+</script>
+{% endblock %}

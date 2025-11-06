@@ -1,0 +1,109 @@
+{% if character.is_spellcaster %}
+<!-- Spellcasting -->
+<div class="card mb-1 border-primary">
+    <div class="card-header p-1 bg-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <span style="font-size: 0.7rem;"><strong><i class="fas fa-magic"></i> SPELLCASTING</strong></span>
+            <a href="{% url 'character_manage_spells' character.pk %}" class="btn btn-sm btn-light py-0" style="font-size: 0.65rem;">
+                <i class="fas fa-edit"></i> Manage
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-1">
+        <!-- Spellcasting Stats -->
+        <div class="row text-center g-1 mb-1">
+            <div class="col-4">
+                <small class="text-muted d-block" style="font-size: 0.65rem;">Ability</small>
+                <strong style="font-size: 0.75rem;">{{ character.get_spellcasting_ability_display|default:"—" }}</strong>
+            </div>
+            <div class="col-4">
+                <small class="text-muted d-block" style="font-size: 0.65rem;">Save DC</small>
+                <strong style="font-size: 0.75rem;">{{ character.spell_save_dc|default:"N/A" }}</strong>
+            </div>
+            <div class="col-4">
+                <small class="text-muted d-block" style="font-size: 0.65rem;">Attack</small>
+                <strong style="font-size: 0.75rem;">+{{ character.spell_attack_bonus|default:0 }}</strong>
+            </div>
+        </div>
+
+        <!-- Spell Slots -->
+        <h6 class="border-top pt-1 mb-1" style="font-size: 0.75rem;"><strong>SPELL SLOTS</strong></h6>
+        {% if spell_slots %}
+            <div class="row g-1 mb-1">
+                {% for slot in spell_slots %}
+                    <div class="col-6">
+                        <div class="border rounded p-1 text-center">
+                            <small class="text-muted d-block" style="font-size: 0.65rem;">L{{ slot.level }}</small>
+                            <strong style="font-size: 0.75rem;" class="{% if slot.used >= slot.max %}text-danger{% elif slot.used > 0 %}text-warning{% else %}text-success{% endif %}">
+                                {{ slot.available }}/{{ slot.max }}
+                            </strong>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info p-1 mb-1" style="font-size: 0.7rem;">
+                <i class="fas fa-info-circle"></i>
+                <a href="{% url 'character_spell_slots' character.pk %}" class="alert-link">Configure spell slots</a>
+            </div>
+        {% endif %}
+
+        <!-- Known Spells -->
+        {% if character.spells.exists %}
+            <h6 class="border-top pt-1 mb-1" style="font-size: 0.75rem;"><strong>SPELLS</strong></h6>
+            <div>
+                {% regroup character.spells.all by spell.level as spell_list %}
+                {% for spell_level in spell_list %}
+                    <div class="mb-1">
+                        <strong class="text-primary" style="font-size: 0.75rem;">
+                            {% if spell_level.grouper == 0 %}
+                                Cantrips
+                            {% else %}
+                                Level {{ spell_level.grouper }}
+                            {% endif %}
+                        </strong>
+                        <ul class="list-unstyled ps-2 mb-0" style="font-size: 0.7rem;">
+                            {% for char_spell in spell_level.list %}
+                                <li class="small mb-1">
+                                    <span class="spell-name-hover spell-clickable"
+                                          data-bs-toggle="tooltip"
+                                          data-bs-html="true"
+                                          data-bs-placement="left"
+                                          data-spell-id="{{ char_spell.spell.id }}"
+                                          title="<div class='spell-tooltip-detail'>
+                                                   <strong>{{ char_spell.spell.name }}</strong><br>
+                                                   <em>Level {{ char_spell.spell.level }} {{ char_spell.spell.school }}</em><br>
+                                                   {% with damage=char_spell.spell.get_damage_info save=char_spell.spell.get_save_dc %}
+                                                   {% if damage %}
+                                                   <strong class='text-danger'><i class='fas fa-fire'></i> Damage:</strong> {{ damage }}<br>
+                                                   {% endif %}
+                                                   {% if save %}
+                                                   <strong class='text-warning'><i class='fas fa-shield-alt'></i> Save:</strong> {{ save }} DC {{ character.spell_save_dc }}<br>
+                                                   {% endif %}
+                                                   {% endwith %}
+                                                   <strong>Time:</strong> {{ char_spell.spell.casting_time }}<br>
+                                                   <strong>Range:</strong> {{ char_spell.spell.range }}<br>
+                                                   <strong>Duration:</strong> {{ char_spell.spell.duration }}<br>
+                                                   <hr style='margin: 5px 0; border-color: rgba(255,255,255,0.3);'>
+                                                   <small style='font-size: 0.75rem;'>Click for full details</small>
+                                                 </div>">
+                                        {{ char_spell.spell.name }}
+                                    </span>
+                                    {% if not char_spell.is_prepared %}
+                                        <span class="text-warning" title="Not prepared"><i class="far fa-circle"></i></span>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info p-2 mb-0 small">
+                <i class="fas fa-info-circle"></i>
+                <a href="{% url 'character_manage_spells' character.pk %}" class="alert-link">Add spells</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

@@ -1,0 +1,24 @@
+<!-- Top Row: AC, Initiative, Speed in compact boxes -->
+<div class="row g-2 mb-2">
+    <div class="col-3">
+        <div class="border rounded p-2 text-center" style="background: #f8f9fa;">
+            <h2 class="mb-0" style="font-size: 2.5rem; font-weight: bold;">{{ character.initiative|stringformat:"+d" }}</h2>
+            <small style="font-size: 0.75rem; font-weight: 600;">INITIATIVE</small>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="border rounded p-2 text-center" style="background: #f8f9fa; border-width: 3px !important;">
+            <h2 class="mb-0" style="font-size: 2.5rem; font-weight: bold;">{{ character.armor_class }}</h2>
+            <small style="font-size: 0.75rem; font-weight: 600;">ARMOR CLASS</small>
+        </div>
+    </div>
+    <div class="col-6">
+        <form method="post" action="{% url 'character_edit_combat' character.pk %}" class="h-100">
+            {% csrf_token %}
+            <input type="hidden" name="inspiration" value="{% if character.inspiration %}false{% else %}true{% endif %}">
+            <button type="submit" class="btn {% if character.inspiration %}btn-warning{% else %}btn-outline-secondary{% endif %} w-100 h-100 d-flex align-items-center justify-content-center" style="font-size: 0.8rem; font-weight: 600;">
+                <i class="fas fa-star me-2"></i> HEROIC INSPIRATION
+            </button>
+        </form>
+    </div>
+</div>

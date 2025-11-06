@@ -1,0 +1,51 @@
+<!-- HP, Hit Dice, and Resistances Section -->
+<div class="row g-2 mb-2">
+    <div class="col-10">
+        <div class="card h-100">
+            <div class="card-body p-2">
+                <div class="row g-2 align-items-center">
+                    <div class="col-2 text-center">
+                        <small class="d-block" style="font-size: 0.65rem; font-weight: 600;">Max HP</small>
+                        <h3 class="mb-0" style="font-weight: bold;">{{ character.max_hit_points }}</h3>
+                    </div>
+                    <div class="col-4">
+                        <form method="post" action="{% url 'character_edit_combat' character.pk %}">
+                            {% csrf_token %}
+                            <label class="form-label mb-0" style="font-size: 0.65rem; font-weight: 600;">Current HP</label>
+                            <input type="number" name="current_hit_points" class="form-control form-control-sm text-center" 
+                                   value="{{ character.current_hit_points }}" min="0" max="{{ character.max_hit_points }}"
+                                   style="-moz-appearance: textfield; -webkit-appearance: none; appearance: none; font-size: 1.1rem; font-weight: bold;">
+                            <button type="submit" class="btn btn-primary btn-sm w-100 mt-1" style="font-size: 0.65rem;">Update</button>
+                        </form>
+                    </div>
+                    <div class="col-4">
+                        <form method="post" action="{% url 'character_edit_combat' character.pk %}">
+                            {% csrf_token %}
+                            <label class="form-label mb-0" style="font-size: 0.65rem; font-weight: 600;">Temp HP</label>
+                            <input type="number" name="temporary_hit_points" class="form-control form-control-sm text-center" 
+                                   value="{{ character.temporary_hit_points }}" min="0"
+                                   style="-moz-appearance: textfield; -webkit-appearance: none; appearance: none; font-size: 1.1rem; font-weight: bold;">
+                            <button type="submit" class="btn btn-primary btn-sm w-100 mt-1" style="font-size: 0.65rem;">Update</button>
+                        </form>
+                    </div>
+                    <div class="col-2 text-center border-start">
+                        <small class="d-block mb-1" style="font-size: 0.65rem; font-weight: 600;">HIT POINTS</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-2">
+        <div class="card h-100">
+            <div class="card-body p-2">
+                <div class="text-center mb-1">
+                    <small class="d-block" style="font-size: 0.65rem; font-weight: 600;">Available</small>
+                    <strong style="font-size: 0.95rem;">{{ character.available_hit_dice }}/{{ character.level }}d{% if character.character_class %}{{ character.character_class.hit_die }}{% else %}10{% endif %}</strong>
+                </div>
+                <div class="text-center border-top pt-1">
+                    <small style="font-size: 0.65rem; font-weight: 600;">HIT DICE</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

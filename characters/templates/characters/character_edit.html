@@ -1,0 +1,104 @@
+{% extends 'characters/base.html' %}
+
+{% block title %}Edit {{ object.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="mb-4">Edit Character: {{ object.name }}</h1>
+        
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'character_edit' object.pk %}"><i class="fas fa-clipboard-list"></i> Basic Info</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_edit_skills' object.pk %}"><i class="fas fa-bolt"></i> Skills</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_edit_details' object.pk %}"><i class="fas fa-backpack"></i> Details & Equipment</a>
+            </li>
+            {% if object.is_spellcaster %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_manage_spells' object.pk %}"><i class="fas fa-magic"></i> Spells</a>
+            </li>
+            {% endif %}
+        </ul>
+        
+        <div class="card">
+            <div class="card-header">
+                Character Details
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.name.label }}</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.player_name.label }}</label>
+                            {{ form.player_name }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.race.label }}</label>
+                            {{ form.race }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.character_class.label }}</label>
+                            {{ form.character_class }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.background.label }}</label>
+                            {{ form.background }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.alignment.label }}</label>
+                        {{ form.alignment }}
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3">Ability Scores</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.strength.label }}</label>
+                            {{ form.strength }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.dexterity.label }}</label>
+                            {{ form.dexterity }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.constitution.label }}</label>
+                            {{ form.constitution }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.intelligence.label }}</label>
+                            {{ form.intelligence }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.wisdom.label }}</label>
+                            {{ form.wisdom }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">{{ form.charisma.label }}</label>
+                            {{ form.charisma }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'character_detail' object.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

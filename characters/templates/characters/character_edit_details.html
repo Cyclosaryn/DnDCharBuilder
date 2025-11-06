@@ -1,0 +1,233 @@
+{% extends 'characters/base.html' %}
+
+{% block title %}Edit Details - {{ character.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="mb-4">Edit Character: {{ character.name }}</h1>
+        
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_edit' character.pk %}"><i class="fas fa-clipboard-list"></i> Basic Info</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_edit_skills' character.pk %}"><i class="fas fa-bolt"></i> Skills</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'character_edit_details' character.pk %}"><i class="fas fa-backpack"></i> Details & Equipment</a>
+            </li>
+            {% if character.is_spellcaster %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_manage_spells' character.pk %}"><i class="fas fa-magic"></i> Spells</a>
+            </li>
+            {% endif %}
+        </ul>
+        
+        <div class="card">
+            <div class="card-header">
+                Personality, Features & Equipment
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <h5 class="mb-3">Personality</h5>
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.personality_traits.label }}</label>
+                        {{ form.personality_traits }}
+                        <small class="text-muted d-block">What makes your character unique?</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.ideals.label }}</label>
+                        {{ form.ideals }}
+                        <small class="text-muted d-block">What beliefs drive your character?</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.bonds.label }}</label>
+                        {{ form.bonds }}
+                        <small class="text-muted d-block">Who or what does your character care about most?</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.flaws.label }}</label>
+                        {{ form.flaws }}
+                        <small class="text-muted d-block">What weakness might undermine your character?</small>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5 class="mb-3">Features & Traits</h5>
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.features_and_traits.label }}</label>
+                        {{ form.features_and_traits }}
+                        <small class="text-muted d-block">Racial traits, class features, feats, etc.</small>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5 class="mb-3">Equipment</h5>
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.equipment_items.label }}</label>
+                        {{ form.equipment_items }}
+                        <small class="text-muted d-block">Click the dropdown to search and select equipment items. You can select multiple items.</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Additional Equipment Notes</label>
+                        {{ form.equipment }}
+                        <small class="text-muted d-block">Custom items, enchantments, modifications, or other equipment details not in the list above.</small>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5 class="mb-3">Money</h5>
+                    <div class="row">
+                        <div class="col-md-2 mb-2">
+                            <label class="form-label">Copper (CP)</label>
+                            {{ form.copper_pieces }}
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <label class="form-label">Silver (SP)</label>
+                            {{ form.silver_pieces }}
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label">Electrum (EP)</label>
+                            {{ form.electrum_pieces }}
+                        </div>
+                        <div class="col-md-2 mb-2">
+                            <label class="form-label">Gold (GP)</label>
+                            {{ form.gold_pieces }}
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label">Platinum (PP)</label>
+                            {{ form.platinum_pieces }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'character_detail' character.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Details</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<style>
+    .select2-container {
+        width: 100% !important;
+    }
+    .select2-container--bootstrap-5 .select2-selection {
+        min-height: auto !important;
+    }
+    .select2-container--bootstrap-5 .select2-selection--multiple {
+        min-height: 38px !important;
+    }
+    .equipment-option {
+        padding: 5px 0;
+    }
+    .equipment-name {
+        font-weight: 500;
+        color: #000;
+    }
+    .equipment-category {
+        font-size: 0.85em;
+        color: #666;
+        margin-left: 5px;
+    }
+    .equipment-description {
+        font-size: 0.85em;
+        color: #555;
+        margin-top: 2px;
+        line-height: 1.3;
+    }
+    .equipment-cost-weight {
+        font-size: 0.8em;
+        color: #888;
+        margin-top: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<script>
+    // Equipment data with descriptions
+    const equipmentData = {
+        {% for item in equipment_items %}
+        "{{ item.id }}": {
+            "name": "{{ item.name|escapejs }}",
+            "category": "{{ item.category|escapejs }}",
+            "description": "{{ item.description|escapejs }}",
+            "cost": {{ item.cost_gold }},
+            "weight": {{ item.weight }}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    };
+    
+    // Define formatter functions in global scope
+    function formatEquipment(item) {
+        if (!item.id) {
+            return item.text;
+        }
+        
+        const data = equipmentData[item.id];
+        if (!data) {
+            return item.text;
+        }
+        
+        let html = '<div class="equipment-option">';
+        html += '<div><span class="equipment-name">' + data.name + '</span>';
+        html += '<span class="equipment-category">[' + data.category + ']</span></div>';
+        
+        if (data.description) {
+            html += '<div class="equipment-description">' + data.description + '</div>';
+        }
+        
+        html += '<div class="equipment-cost-weight">';
+        html += data.cost + ' gp';
+        if (data.weight > 0) {
+            html += ' • ' + data.weight + ' lbs';
+        }
+        html += '</div>';
+        html += '</div>';
+        
+        return html;
+    }
+    
+    function formatEquipmentSelection(item) {
+        if (!item.id) {
+            return item.text;
+        }
+        
+        const data = equipmentData[item.id];
+        if (!data) {
+            return item.text;
+        }
+        
+        return data.name + ' [' + data.category + ']';
+    }
+    
+    $(document).ready(function() {
+        // Initialize Select2 with options
+        $('#id_equipment_items').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Search and select equipment...',
+            allowClear: true,
+            width: '100%',
+            templateResult: formatEquipment,
+            templateSelection: formatEquipmentSelection,
+            escapeMarkup: function(markup) { return markup; }
+        });
+    });
+</script>
+{% endblock %}

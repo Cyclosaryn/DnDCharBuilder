@@ -1,0 +1,395 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tooltips for spell descriptions
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            html: true,
+            trigger: 'hover focus',
+            delay: { show: 300, hide: 100 },
+            boundary: 'window'
+        });
+    });
+
+    // Handle spell clicks to show modal with full details
+    document.querySelectorAll('.spell-clickable').forEach(function(spellElement) {
+        spellElement.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const spellId = this.getAttribute('data-spell-id');
+            const characterPk = '{{ character.pk }}';
+            
+            // Hide tooltip when clicking
+            const tooltip = bootstrap.Tooltip.getInstance(this);
+            if (tooltip) {
+                tooltip.hide();
+            }
+            
+            // Fetch spell details via AJAX
+            fetch(`/ajax/spell/${spellId}/?character_pk=${characterPk}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate modal with spell data
+                    document.getElementById('modalSpellName').textContent = data.name;
+                    document.getElementById('modalSpellLevel').textContent = data.level === 0 ? 'Cantrip' : `Level ${data.level}`;
+                    document.getElementById('modalSpellSchool').textContent = data.school;
+                    document.getElementById('modalSpellCastingTime').textContent = data.casting_time;
+                    document.getElementById('modalSpellRange').textContent = data.range;
+                    document.getElementById('modalSpellComponents').textContent = data.components;
+                    document.getElementById('modalSpellDuration').textContent = data.duration;
+                    document.getElementById('modalSpellDescription').textContent = data.description;
+                    
+                    // Show damage if available
+                    const damageAlert = document.getElementById('modalSpellDamage');
+                    if (data.damage) {
+                        document.getElementById('modalSpellDamageText').textContent = data.damage;
+                        damageAlert.style.display = 'block';
+                    } else {
+                        damageAlert.style.display = 'none';
+                    }
+                    
+                    // Show save DC if available
+                    const saveAlert = document.getElementById('modalSpellSave');
+                    if (data.save) {
+                        const saveText = data.spell_save_dc ? `${data.save} (DC ${data.spell_save_dc})` : data.save;
+                        document.getElementById('modalSpellSaveText').textContent = saveText;
+                        saveAlert.style.display = 'block';
+                    } else {
+                        saveAlert.style.display = 'none';
+                    }
+                    
+                    // Show the modal
+                    const modal = new bootstrap.Modal(document.getElementById('spellDetailModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error fetching spell details:', error);
+                    alert('Error loading spell details. Please try again.');
+                });
+        });
+    });
+
+    // Handle equipment clicks to show modal with full details
+    document.querySelectorAll('.equipment-clickable').forEach(function(equipmentElement) {
+        equipmentElement.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const equipmentId = this.getAttribute('data-equipment-id');
+            
+            // Hide tooltip when clicking
+            const tooltip = bootstrap.Tooltip.getInstance(this);
+            if (tooltip) {
+                tooltip.hide();
+            }
+            
+            // Fetch equipment details via AJAX
+            fetch(`/ajax/equipment/${equipmentId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate modal with equipment data
+                    document.getElementById('modalEquipmentName').textContent = data.name;
+                    document.getElementById('modalEquipmentCategory').textContent = data.category;
+                    document.getElementById('modalEquipmentCost').textContent = data.cost_gold;
+                    document.getElementById('modalEquipmentWeight').textContent = data.weight;
+                    document.getElementById('modalEquipmentDescription').textContent = data.description;
+                    
+                    // Show damage if available (weapons)
+                    const damageAlert = document.getElementById('modalEquipmentDamage');
+                    if (data.damage) {
+                        document.getElementById('modalEquipmentDamageText').textContent = data.damage;
+                        damageAlert.style.display = 'block';
+                    } else {
+                        damageAlert.style.display = 'none';
+                    }
+                    
+                    // Show AC if available (armor)
+                    const acAlert = document.getElementById('modalEquipmentAC');
+                    if (data.armor_class) {
+                        document.getElementById('modalEquipmentACText').textContent = data.armor_class;
+                        acAlert.style.display = 'block';
+                    } else {
+                        acAlert.style.display = 'none';
+                    }
+                    
+                    // Show properties if available (weapons)
+                    const propertiesAlert = document.getElementById('modalEquipmentProperties');
+                    if (data.properties && data.properties.length > 0) {
+                        document.getElementById('modalEquipmentPropertiesText').textContent = data.properties.join(', ');
+                        propertiesAlert.style.display = 'block';
+                    } else {
+                        propertiesAlert.style.display = 'none';
+                    }
+                    
+                    // Show the modal
+                    const modal = new bootstrap.Modal(document.getElementById('equipmentDetailModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error fetching equipment details:', error);
+                    alert('Error loading equipment details. Please try again.');
+                });
+        });
+    });
+
+    // Handle auto-submit for select dropdowns and checkboxes with class 'auto-submit'
+    const autoSubmitElements = document.querySelectorAll('.auto-submit');
+    
+    autoSubmitElements.forEach(element => {
+        element.addEventListener('change', function() {
+            // Find the parent form and trigger submit
+            const form = this.closest('form');
+            if (form) {
+                // Create a custom event to trigger the form submission
+                const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                form.dispatchEvent(submitEvent);
+            }
+        });
+    });
+    
+    // Handle all combat forms with AJAX
+    const combatForms = document.querySelectorAll('form[action*="edit/combat"]');
+    
+    combatForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const url = form.action;
+            
+            // Check if this is an auto-submit form (death saves, exhaustion)
+            const isAutoSubmit = form.querySelector('.auto-submit');
+            
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success feedback
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    
+                    if (submitBtn) {
+                        // For forms with buttons
+                        const originalText = submitBtn.textContent;
+                        submitBtn.textContent = '✓ Saved';
+                        submitBtn.classList.remove('btn-primary', 'btn-secondary');
+                        submitBtn.classList.add('btn-success');
+                        
+                        setTimeout(() => {
+                            submitBtn.textContent = originalText;
+                            submitBtn.classList.remove('btn-success');
+                            submitBtn.classList.add('btn-primary');
+                        }, 1500);
+                    } else if (isAutoSubmit) {
+                        // For auto-submit forms (death saves, exhaustion)
+                        // Create a temporary success indicator
+                        const indicator = document.createElement('span');
+                        indicator.textContent = ' ✓';
+                        indicator.style.color = '#198754';
+                        indicator.style.fontWeight = 'bold';
+                        indicator.style.marginLeft = '5px';
+                        indicator.className = 'save-indicator';
+                        
+                        // Find the best place to show the indicator
+                        const label = form.querySelector('label, small[style*="font-weight: 600"]');
+                        if (label && !label.querySelector('.save-indicator')) {
+                            label.appendChild(indicator);
+                            setTimeout(() => {
+                                indicator.remove();
+                            }, 1500);
+                        }
+                    }
+                } else {
+                    alert(data.error || 'Error updating character. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating character. Please try again.');
+            });
+        });
+    });
+    
+    // Handle rest button forms with AJAX
+    const restForms = document.querySelectorAll('form.rest-form');
+    
+    console.log('Found rest forms:', restForms.length); // Debug log
+    
+    restForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Rest form submitted, prevented default'); // Debug log
+            
+            const url = form.action;
+            const isLongRest = url.includes('long-rest') || url.includes('long_rest');
+            const isShortRest = url.includes('short-rest') || url.includes('short_rest');
+            
+            console.log('Form URL:', url, 'isShortRest:', isShortRest, 'isLongRest:', isLongRest); // Debug log
+            
+            // For short rest, prompt for hit dice first
+            if (isShortRest) {
+                // First request to get available hit dice info
+                const formData = new FormData(form);
+                
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Server error');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Short rest response:', data); // Debug log
+                    
+                    if (data.prompt_for_dice) {
+                        // Show modal for hit dice selection
+                        const modal = new bootstrap.Modal(document.getElementById('hitDiceModal'));
+                        const messageElement = document.getElementById('hitDiceMessage');
+                        const inputElement = document.getElementById('hitDiceCount');
+                        const confirmButton = document.getElementById('confirmHitDice');
+                        
+                        // Set message and input max
+                        messageElement.textContent = data.message;
+                        inputElement.max = data.available_hit_dice;
+                        inputElement.value = Math.min(1, data.available_hit_dice);
+                        
+                        // Remove old event listeners and add new one
+                        const newConfirmButton = confirmButton.cloneNode(true);
+                        confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+                        
+                        newConfirmButton.addEventListener('click', function() {
+                            const hitDiceCount = inputElement.value;
+                            
+                            // Hide modal
+                            modal.hide();
+                            
+                            // Second request with hit dice count
+                            const formData2 = new FormData(form);
+                            formData2.append('hit_dice_count', hitDiceCount);
+                            
+                            fetch(url, {
+                                method: 'POST',
+                                body: formData2,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    return response.json().then(data => {
+                                        throw new Error(data.error || 'Server error');
+                                    });
+                                }
+                                return response.json();
+                            })
+                            .then(data2 => {
+                                console.log('Hit dice roll response:', data2); // Debug log
+                                
+                                if (data2.success) {
+                                    // Show success message with healing details
+                                    const submitBtn = form.querySelector('button[type="submit"]');
+                                    if (submitBtn) {
+                                        submitBtn.innerHTML = '✓ Short Rest Complete!';
+                                        submitBtn.classList.remove('btn-outline-info');
+                                        submitBtn.classList.add('btn-info');
+                                        
+                                        // Show detailed message
+                                        const tempDiv = document.createElement('div');
+                                        tempDiv.className = 'alert alert-success mt-2';
+                                        tempDiv.innerHTML = data2.message;
+                                        tempDiv.style.fontSize = '0.85rem';
+                                        submitBtn.parentElement.appendChild(tempDiv);
+                                        
+                                        setTimeout(() => {
+                                            if (data2.reload) {
+                                                console.log('Short rest complete, reloading...'); // Debug log
+                                                window.location.reload();
+                                            }
+                                        }, 2000);
+                                    }
+                                } else {
+                                    alert(data2.error || 'Error using hit dice. Please try again.');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Error performing short rest. Please try again.');
+                            });
+                        });
+                        
+                        // Show the modal
+                        modal.show();
+                    } else if (data.success) {
+                        handleRestSuccess(form, data, isLongRest);
+                    } else {
+                        alert(data.error || 'Error performing rest. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error performing short rest. Please try again.');
+                });
+            } else {
+                // Long rest - proceed normally
+                const formData = new FormData(form);
+                
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        handleRestSuccess(form, data, isLongRest);
+                    } else {
+                        alert(data.error || 'Error performing rest. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error performing rest. Please try again.');
+                });
+            }
+        });
+    });
+    
+    // Helper function to handle rest success
+    function handleRestSuccess(form, data, isLongRest) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            const originalHTML = submitBtn.innerHTML;
+            submitBtn.innerHTML = '✓ ' + (isLongRest ? 'Long Rest Complete!' : 'Short Rest Complete!');
+            submitBtn.classList.remove('btn-outline-info', 'btn-outline-success');
+            submitBtn.classList.add(isLongRest ? 'btn-success' : 'btn-info');
+            
+            console.log('Rest success, reload flag:', data.reload); // Debug log
+            
+            setTimeout(() => {
+                if (data.reload) {
+                    console.log('Reloading page...'); // Debug log
+                    window.location.reload();
+                } else {
+                    submitBtn.innerHTML = originalHTML;
+                    submitBtn.classList.remove('btn-success', 'btn-info');
+                    submitBtn.classList.add(isLongRest ? 'btn-outline-success' : 'btn-outline-info');
+                }
+            }, 1000);
+        }
+    }
+});
+</script>

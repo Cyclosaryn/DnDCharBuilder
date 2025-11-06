@@ -1,0 +1,648 @@
+{% extends 'characters/base.html' %}
+
+{% block title %}Level Up - {{ character.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+    }
+    
+    .rolling-number {
+        animation: pulse 0.1s ease-in-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <h1 class="mb-4"><i class="fas fa-arrow-up"></i> Level Up: {{ character.name }}</h1>
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        Current Character
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Level:</strong> {{ character.level }} → <span class="text-success fw-bold">{{ new_level }}</span></p>
+                        <p><strong>Class:</strong> {{ character.character_class.name }}</p>
+                        <p><strong>Max HP:</strong> {{ character.max_hit_points }}</p>
+                        <p><strong>Proficiency Bonus:</strong> +{{ old_proficiency_bonus }}{% if new_proficiency_bonus != old_proficiency_bonus %} → <span class="text-success fw-bold">+{{ new_proficiency_bonus }}</span>{% endif %}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        What You'll Gain
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0">
+                            <li>Hit Points (you choose how)</li>
+                            {% if is_asi_level %}
+                            <li class="text-primary fw-bold">Ability Score Improvement or Feat</li>
+                            {% endif %}
+                            <li>Class Features (if applicable)</li>
+                            {% if new_proficiency_bonus != old_proficiency_bonus %}
+                            <li class="text-success">Proficiency bonus increases to +{{ new_proficiency_bonus }}</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                Level Up to {{ new_level }}
+            </div>
+            <div class="card-body">
+                <form method="post" id="levelUpForm">
+                    {% csrf_token %}
+                    
+                    <!-- Hit Points Section -->
+                    <h5 class="mb-3">1. Increase Hit Points</h5>
+                    <div class="alert alert-info">
+                        <strong>Hit Die:</strong> d{{ hit_die }}<br>
+                        <strong>Constitution Modifier:</strong> {{ con_modifier|stringformat:"+d" }}<br>
+                        <strong>Average HP:</strong> {{ average_hp }}<br>
+                        <small>You gain at least 1 HP per level, even with negative CON modifier.</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {% for choice in form.hp_method %}
+                        <div class="form-check">
+                            {{ choice.tag }}
+                            <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                {{ choice.choice_label }}
+                                {% if choice.data.value == 'average' %}
+                                    <span class="text-muted">(Gain {{ average_hp }} HP)</span>
+                                {% else %}
+                                    <span class="text-muted">(Roll 1d{{ hit_die }} + {{ con_modifier }})</span>
+                                {% endif %}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div id="rollSection" style="display: none;" class="mb-3">
+                        <button type="button" class="btn btn-secondary btn-lg" id="rollButton">
+                            <span id="rollButtonText"></span>
+                        </button>
+                        <div id="rollResult" class="mt-2"></div>
+                        <input type="hidden" id="id_hp_roll" name="hp_roll">
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Class Features Section -->
+                    {% if has_feature_choice %}
+                    <h5 class="mb-3">2. Select {{ feature_data.name }}</h5>
+                    <div class="alert alert-primary">
+                        <strong>{{ feature_data.name }}:</strong> {{ feature_data.description }}
+                        <br><small>You must select {{ feature_data.num_choices }} option{% if feature_data.num_choices > 1 %}s{% endif %}.</small>
+                    </div>
+                    
+                    {% for i in "x"|ljust:feature_data.num_choices %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Choice {{ forloop.counter }}</label>
+                        <select name="feature_choice_{{ forloop.counter0 }}" class="form-select" required>
+                            <option value="">-- Select {{ feature_data.name }} --</option>
+                            {% for option in feature_data.options %}
+                            <option value="{{ forloop.counter0 }}">{{ option.name }}</option>
+                            {% endfor %}
+                        </select>
+                        
+                        <!-- Details for each option -->
+                        <div class="mt-2">
+                            {% for option in feature_data.options %}
+                            <div class="alert alert-info feature-option-detail" data-choice="{{ forloop.counter0 }}" data-choice-num="{{ forloop.parentloop.counter0 }}" style="display: none;">
+                                <h6>{{ option.name }}</h6>
+                                <p class="mb-1">{{ option.description }}</p>
+                                {% if option.prerequisite %}
+                                <p class="small text-muted mb-0"><strong>Prerequisite:</strong> {{ option.prerequisite }}</p>
+                                {% endif %}
+                                {% if option.cost %}
+                                <p class="small text-muted mb-0"><strong>Cost:</strong> {{ option.cost }}</p>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <hr>
+                    {% endif %}
+                    
+                    <!-- Expertise Selection -->
+                    {% if is_expertise_level and expertise_form %}
+                    <h5 class="mb-3">{% if has_feature_choice %}3{% else %}2{% endif %}. Select Expertise</h5>
+                    <div class="alert alert-warning">
+                        <strong>Expertise:</strong> Choose {{ expertise_count }} skill(s) you are proficient in. Your proficiency bonus is doubled for ability checks using those skills. You can only select skills you're already proficient in.
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check mb-2">
+                                {{ expertise_form.acrobatics_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.acrobatics_expertise.id_for_label }}">
+                                    Acrobatics <small class="text-muted">(DEX)</small>
+                                </label>
+                                {% if expertise_form.acrobatics_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.acrobatics_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.animal_handling_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.animal_handling_expertise.id_for_label }}">
+                                    Animal Handling <small class="text-muted">(WIS)</small>
+                                </label>
+                                {% if expertise_form.animal_handling_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.animal_handling_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.arcana_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.arcana_expertise.id_for_label }}">
+                                    Arcana <small class="text-muted">(INT)</small>
+                                </label>
+                                {% if expertise_form.arcana_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.arcana_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.athletics_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.athletics_expertise.id_for_label }}">
+                                    Athletics <small class="text-muted">(STR)</small>
+                                </label>
+                                {% if expertise_form.athletics_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.athletics_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.deception_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.deception_expertise.id_for_label }}">
+                                    Deception <small class="text-muted">(CHA)</small>
+                                </label>
+                                {% if expertise_form.deception_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.deception_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.history_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.history_expertise.id_for_label }}">
+                                    History <small class="text-muted">(INT)</small>
+                                </label>
+                                {% if expertise_form.history_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.history_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.insight_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.insight_expertise.id_for_label }}">
+                                    Insight <small class="text-muted">(WIS)</small>
+                                </label>
+                                {% if expertise_form.insight_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.insight_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.intimidation_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.intimidation_expertise.id_for_label }}">
+                                    Intimidation <small class="text-muted">(CHA)</small>
+                                </label>
+                                {% if expertise_form.intimidation_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.intimidation_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.investigation_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.investigation_expertise.id_for_label }}">
+                                    Investigation <small class="text-muted">(INT)</small>
+                                </label>
+                                {% if expertise_form.investigation_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.investigation_expertise.help_text }}</small>{% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-check mb-2">
+                                {{ expertise_form.medicine_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.medicine_expertise.id_for_label }}">
+                                    Medicine <small class="text-muted">(WIS)</small>
+                                </label>
+                                {% if expertise_form.medicine_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.medicine_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.nature_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.nature_expertise.id_for_label }}">
+                                    Nature <small class="text-muted">(INT)</small>
+                                </label>
+                                {% if expertise_form.nature_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.nature_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.perception_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.perception_expertise.id_for_label }}">
+                                    Perception <small class="text-muted">(WIS)</small>
+                                </label>
+                                {% if expertise_form.perception_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.perception_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.performance_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.performance_expertise.id_for_label }}">
+                                    Performance <small class="text-muted">(CHA)</small>
+                                </label>
+                                {% if expertise_form.performance_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.performance_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.persuasion_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.persuasion_expertise.id_for_label }}">
+                                    Persuasion <small class="text-muted">(CHA)</small>
+                                </label>
+                                {% if expertise_form.persuasion_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.persuasion_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.religion_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.religion_expertise.id_for_label }}">
+                                    Religion <small class="text-muted">(INT)</small>
+                                </label>
+                                {% if expertise_form.religion_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.religion_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.sleight_of_hand_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.sleight_of_hand_expertise.id_for_label }}">
+                                    Sleight of Hand <small class="text-muted">(DEX)</small>
+                                </label>
+                                {% if expertise_form.sleight_of_hand_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.sleight_of_hand_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.stealth_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.stealth_expertise.id_for_label }}">
+                                    Stealth <small class="text-muted">(DEX)</small>
+                                </label>
+                                {% if expertise_form.stealth_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.stealth_expertise.help_text }}</small>{% endif %}
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ expertise_form.survival_expertise }}
+                                <label class="form-check-label" for="{{ expertise_form.survival_expertise.id_for_label }}">
+                                    Survival <small class="text-muted">(WIS)</small>
+                                </label>
+                                {% if expertise_form.survival_expertise.help_text %}<small class="text-muted d-block">{{ expertise_form.survival_expertise.help_text }}</small>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    {% endif %}
+                    
+                    <!-- ASI or Feat Section -->
+                    {% if is_asi_level %}
+                    <h5 class="mb-3">{% if has_feature_choice %}3{% else %}2{% endif %}. Ability Score Improvement or Feat</h5>
+                    <div class="alert alert-warning">
+                        <strong>Important:</strong> You can either increase your ability scores or take a feat. Choose wisely!
+                    </div>
+                    
+                    <div class="mb-3">
+                        {% for choice in form.asi_or_feat %}
+                        <div class="form-check">
+                            {{ choice.tag }}
+                            <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                {{ choice.choice_label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div id="asiSection" style="display: none;" class="mb-3">
+                        <h6>Ability Score Improvements</h6>
+                        <p class="text-muted small">Choose to increase one ability by +2, or two abilities by +1 each. No ability can exceed 20.</p>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label">First Ability</label>
+                                {{ form.asi_ability_1 }}
+                            </div>
+                            <div class="col-md-2 mb-2">
+                                <label class="form-label">Amount</label>
+                                {{ form.asi_ability_1_amount }}
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label">Second Ability (if +1 each)</label>
+                                {{ form.asi_ability_2 }}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-2">
+                            <h6>Current Ability Scores:</h6>
+                            <div class="row">
+                                <div class="col-md-2"><small><strong>STR:</strong> {{ character.total_strength }}</small></div>
+                                <div class="col-md-2"><small><strong>DEX:</strong> {{ character.total_dexterity }}</small></div>
+                                <div class="col-md-2"><small><strong>CON:</strong> {{ character.total_constitution }}</small></div>
+                                <div class="col-md-2"><small><strong>INT:</strong> {{ character.total_intelligence }}</small></div>
+                                <div class="col-md-2"><small><strong>WIS:</strong> {{ character.total_wisdom }}</small></div>
+                                <div class="col-md-2"><small><strong>CHA:</strong> {{ character.total_charisma }}</small></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="featSection" style="display: none;" class="mb-3">
+                        <h6>Select a Feat</h6>
+                        <p class="text-muted small">Feats provide unique abilities and bonuses.</p>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.feat.label }}</label>
+                            {{ form.feat }}
+                            <small class="text-muted d-block">{{ form.feat.help_text }}</small>
+                        </div>
+                        
+                        <div id="featInfo" style="display: none;" class="alert alert-info">
+                            <h6 id="featName"></h6>
+                            <p id="featPrerequisite" class="small text-muted mb-2"></p>
+                            <p id="featDescription" class="mb-0" style="white-space: pre-line;"></p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Next ASI/Feat Info -->
+                    <div class="alert alert-info">
+                        <strong><i class="fas fa-info-circle"></i> Next Feat/ASI Opportunity:</strong> 
+                        {% if next_asi_level %}
+                            Level {{ next_asi_level }}
+                        {% else %}
+                            No more ASI/Feat levels available
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'character_detail' character.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-sparkles"></i> Complete Level Up to {{ new_level }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-3">
+            <h6><i class="fas fa-lightbulb"></i> Level Up Tips:</h6>
+            <ul class="mb-0">
+                <li><strong>HP:</strong> Rolling can give you more HP but is risky. Taking the average is safe and consistent.</li>
+                {% if is_asi_level %}
+                <li><strong>ASI vs Feat:</strong> ASIs make you stronger overall. Feats provide unique abilities. Consider your build!</li>
+                {% endif %}
+                <li><strong>Class Features:</strong> Check your class description in the Player's Handbook for new abilities at level {{ new_level }}.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const hitDie = {{ hit_die }};
+        const hpMethodRadios = document.querySelectorAll('input[name="hp_method"]');
+        const rollSection = document.getElementById('rollSection');
+        const rollButton = document.getElementById('rollButton');
+        const rollButtonText = document.getElementById('rollButtonText');
+        const rollResult = document.getElementById('rollResult');
+        const hpRollInput = document.getElementById('id_hp_roll');
+        
+        // Select Font Awesome dice icon based on hit die size
+        const diceIcons = {
+            4: 'fa-dice-d4',
+            6: 'fa-dice-d6',
+            8: 'fa-dice-d8',
+            10: 'fa-dice-d10',
+            12: 'fa-dice-d12',
+            20: 'fa-dice-d20'
+        };
+        const diceIcon = diceIcons[hitDie] || 'fa-dice';
+        
+        // Set initial button text with icon
+        rollButtonText.innerHTML = `<i class="fas ${diceIcon}"></i> Roll 1d${hitDie}`;
+        
+        // Show/hide roll section based on HP method
+        hpMethodRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'roll') {
+                    rollSection.style.display = 'block';
+                } else {
+                    rollSection.style.display = 'none';
+                    hpRollInput.value = '';
+                }
+            });
+        });
+        
+        // Roll hit die with animation
+        rollButton.addEventListener('click', function() {
+            const conMod = {{ con_modifier }};
+            const finalRoll = Math.floor(Math.random() * hitDie) + 1;
+            const total = Math.max(1, finalRoll + conMod);
+            
+            // Disable button during animation
+            rollButton.disabled = true;
+            rollButtonText.innerHTML = `<i class="fas ${diceIcon} fa-spin"></i> Rolling...`;
+            
+            // Clear previous result
+            rollResult.innerHTML = '';
+            
+            // Create rolling animation with gradual slowdown
+            let currentNumber = 1;
+            let iterations = 0;
+            const maxIterations = 25; // Number of times to change the number
+            let currentDelay = 30; // Start fast
+            
+            function animateRoll() {
+                iterations++;
+                currentNumber = Math.floor(Math.random() * hitDie) + 1;
+                
+                // Show rolling number with pulse effect
+                rollResult.innerHTML = `
+                    <div class="alert alert-info rolling-number">
+                        <div style="text-align: center;">
+                            <i class="fas ${diceIcon}" style="font-size: 4rem; display: block; margin-bottom: 10px;"></i>
+                            <strong style="font-size: 3rem; display: block;">${currentNumber}</strong>
+                        </div>
+                    </div>
+                `;
+                
+                if (iterations >= maxIterations) {
+                    // Show final result with celebration animation
+                    setTimeout(() => {
+                        rollResult.innerHTML = `
+                            <div class="alert alert-success" style="animation: fadeIn 0.5s;">
+                                <div class="text-center mb-2">
+                                    <i class="fas ${diceIcon}" style="font-size: 5rem; display: block; margin: 0 auto 10px; color: #198754;"></i>
+                                    <strong style="font-size: 3rem; color: #198754;">${finalRoll}</strong>
+                                </div>
+                                <div class="text-center">
+                                    <strong>Roll Result:</strong> ${finalRoll} (on d${hitDie}) + ${conMod} (CON) = 
+                                    <strong style="font-size: 1.5rem; color: #198754;">${total} HP</strong>
+                                </div>
+                            </div>
+                        `;
+                        
+                        hpRollInput.value = finalRoll;
+                        rollButton.disabled = false;
+                        rollButtonText.innerHTML = `<i class="fas ${diceIcon}"></i> Roll 1d${hitDie}`;
+                    }, 200);
+                } else {
+                    // Gradually slow down the animation
+                    currentDelay += 8;
+                    setTimeout(animateRoll, currentDelay);
+                }
+            }
+            
+            animateRoll();
+        });
+        
+        {% if is_asi_level %}
+        // ASI or Feat toggle
+        const asiOrFeatRadios = document.querySelectorAll('input[name="asi_or_feat"]');
+        const asiSection = document.getElementById('asiSection');
+        const featSection = document.getElementById('featSection');
+        
+        asiOrFeatRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'asi') {
+                    asiSection.style.display = 'block';
+                    featSection.style.display = 'none';
+                } else if (this.value === 'feat') {
+                    asiSection.style.display = 'none';
+                    featSection.style.display = 'block';
+                }
+            });
+        });
+        
+        // ASI amount validation
+        const asiAmount = document.getElementById('id_asi_ability_1_amount');
+        const asiAbility2 = document.getElementById('id_asi_ability_2');
+        
+        if (asiAmount) {
+            asiAmount.addEventListener('change', function() {
+                if (this.value === '2') {
+                    asiAbility2.value = '';
+                    asiAbility2.disabled = true;
+                } else {
+                    asiAbility2.disabled = false;
+                }
+            });
+        }
+        
+        // Feat selection display
+        const featSelect = document.getElementById('feat-select');
+        const featInfo = document.getElementById('featInfo');
+        const featName = document.getElementById('featName');
+        const featPrerequisite = document.getElementById('featPrerequisite');
+        const featDescription = document.getElementById('featDescription');
+        const featsData = {{ feats_json|safe }};
+        
+        if (featSelect) {
+            featSelect.addEventListener('change', function() {
+                const featId = this.value;
+                if (featId && featsData[featId]) {
+                    const feat = featsData[featId];
+                    featName.textContent = feat.name;
+                    featPrerequisite.textContent = feat.prerequisite ? 'Prerequisite: ' + feat.prerequisite : '';
+                    featDescription.textContent = feat.description;
+                    featInfo.style.display = 'block';
+                } else {
+                    featInfo.style.display = 'none';
+                }
+            });
+        }
+        {% endif %}
+        
+        // Class feature selection display
+        {% if has_feature_choice %}
+        const featureSelects = document.querySelectorAll('select[name^="feature_choice_"]');
+        featureSelects.forEach(select => {
+            select.addEventListener('change', function() {
+                const choiceNum = this.name.split('_')[2];
+                const selectedValue = this.value;
+                
+                // Hide all option details for this choice
+                const allDetails = document.querySelectorAll(`.feature-option-detail[data-choice-num="${choiceNum}"]`);
+                allDetails.forEach(detail => detail.style.display = 'none');
+                
+                // Show the selected option's details
+                if (selectedValue !== '') {
+                    const selectedDetail = document.querySelector(`.feature-option-detail[data-choice-num="${choiceNum}"][data-choice="${selectedValue}"]`);
+                    if (selectedDetail) {
+                        selectedDetail.style.display = 'block';
+                    }
+                }
+            });
+        });
+        {% endif %}
+    });
+    
+    {% if is_expertise_level %}
+    // Expertise selection limit
+    document.addEventListener('DOMContentLoaded', function() {
+        const maxExpertise = {{ expertise_count }};
+        const expertiseCheckboxes = document.querySelectorAll('input[type="checkbox"][id*="_expertise"]');
+        
+        function updateExpertiseCheckboxes() {
+            const checkedCount = Array.from(expertiseCheckboxes).filter(cb => cb.checked && !cb.hasAttribute('disabled')).length;
+            let messageDiv = document.getElementById('expertise-limit-message');
+            
+            if (!messageDiv) {
+                const alertDiv = document.createElement('div');
+                alertDiv.id = 'expertise-limit-message';
+                alertDiv.className = 'alert alert-info mt-2 mb-3';
+                alertDiv.style.display = 'none';
+                
+                // Find the expertise section and insert message after the alert
+                const expertiseAlert = document.querySelector('.alert-warning');
+                if (expertiseAlert) {
+                    expertiseAlert.parentNode.insertBefore(alertDiv, expertiseAlert.nextSibling);
+                }
+                messageDiv = alertDiv;
+            }
+            
+            if (checkedCount >= maxExpertise) {
+                messageDiv.innerHTML = `<strong>Limit Reached:</strong> You have selected ${checkedCount} of ${maxExpertise} expertise skill(s).`;
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'alert alert-warning mt-2 mb-3';
+                
+                // Disable unchecked boxes that aren't already disabled by proficiency check
+                expertiseCheckboxes.forEach(cb => {
+                    if (!cb.checked && !cb.hasAttribute('disabled')) {
+                        cb.disabled = true;
+                        cb.dataset.temporarilyDisabled = 'true';
+                    }
+                });
+            } else {
+                messageDiv.innerHTML = `<strong>Expertise Selected:</strong> ${checkedCount} of ${maxExpertise}`;
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'alert alert-info mt-2 mb-3';
+                
+                // Re-enable temporarily disabled boxes (but not those disabled by proficiency check)
+                expertiseCheckboxes.forEach(cb => {
+                    if (cb.dataset.temporarilyDisabled === 'true') {
+                        cb.disabled = false;
+                        delete cb.dataset.temporarilyDisabled;
+                    }
+                });
+            }
+        }
+        
+        expertiseCheckboxes.forEach(cb => {
+            // Don't add listener to checkboxes that are permanently disabled
+            if (!cb.hasAttribute('disabled')) {
+                cb.addEventListener('change', updateExpertiseCheckboxes);
+            }
+        });
+        
+        updateExpertiseCheckboxes();
+    });
+    {% endif %}
+</script>
+{% endblock %}
+
+{% endblock %}

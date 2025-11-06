@@ -1,0 +1,182 @@
+{% extends 'characters/base.html' %}
+{% load static %}
+
+{% block title %}Manage Spells - {{ character.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="mb-4">Edit Character: {{ character.name }}</h1>
+        
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_edit' character.pk %}"><i class="fas fa-clipboard-list"></i> Basic Info</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_edit_skills' character.pk %}"><i class="fas fa-bolt"></i> Skills</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_edit_details' character.pk %}"><i class="fas fa-backpack"></i> Details & Equipment</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'character_manage_spells' character.pk %}"><i class="fas fa-magic"></i> Spells</a>
+            </li>
+        </ul>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-magic"></i> Manage Spells
+            </div>
+            <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-book text-info"></i> Spellcasting Info</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Spellcasting Ability:</strong><br>
+                            {{ character.get_spellcasting_ability_display|default:"Not set" }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Spell Save DC:</strong><br>
+                            {{ character.spell_save_dc|default:"N/A" }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Spell Attack Bonus:</strong><br>
+                            +{{ character.spell_attack_bonus|default:0 }}
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'character_spell_slots' character.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-cog"></i> Configure Spell Slots
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spell Selection Form -->
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-scroll"></i> Select Spells</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Note:</strong> Select the spells your {{ character.character_class.name }} knows or has prepared. 
+                            Cantrips are always available, while leveled spells may need to be prepared depending on your class.
+                        </div>
+
+                        {% for field in form %}
+                            <div class="spell-level-section mb-4">
+                                <h5 class="border-bottom pb-2">
+                                    {% if 'level_0' in field.name %}
+                                        <i class="fas fa-star text-warning"></i> {{ field.label }}
+                                    {% else %}
+                                        <i class="fas fa-circle-notch text-primary"></i> {{ field.label }}
+                                    {% endif %}
+                                </h5>
+                                <div class="row">
+                                    {% for spell in form.spells_by_level.values %}
+                                        {% for spell_obj in spell %}
+                                            {% if spell_obj.level|stringformat:"s" in field.name %}
+                                            <div class="col-md-6 col-lg-4 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" 
+                                                           type="checkbox" 
+                                                           name="{{ field.name }}" 
+                                                           value="{{ spell_obj.id }}" 
+                                                           id="spell_{{ spell_obj.id }}"
+                                                           {% if spell_obj.id in field.initial %}checked{% endif %}>
+                                                    <label class="form-check-label spell-label" 
+                                                           for="spell_{{ spell_obj.id }}"
+                                                           data-bs-toggle="tooltip"
+                                                           data-bs-html="true"
+                                                           data-bs-placement="top"
+                                                           title="<div class='spell-tooltip'>
+                                                                    <strong>{{ spell_obj.name }}</strong><br>
+                                                                    <em>Level {{ spell_obj.level }} {{ spell_obj.school }}</em><br>
+                                                                    <strong>Casting Time:</strong> {{ spell_obj.casting_time }}<br>
+                                                                    <strong>Range:</strong> {{ spell_obj.range }}<br>
+                                                                    <strong>Components:</strong> {{ spell_obj.components }}<br>
+                                                                    <strong>Duration:</strong> {{ spell_obj.duration }}<br>
+                                                                    <hr style='margin: 5px 0;'>
+                                                                    {{ spell_obj.description|truncatewords:30 }}
+                                                                  </div>">
+                                                        {{ spell_obj.name }} <span class="badge bg-secondary">{{ spell_obj.school }}</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        {% if not form.fields %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                No spells available for {{ character.character_class.name }}. 
+                                Make sure the spell database is populated.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mb-4">
+                    <a href="{% url 'character_detail' character.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save Spells
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.spell-level-section {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.spell-label {
+    cursor: help;
+    transition: all 0.2s ease;
+}
+
+.spell-label:hover {
+    color: #0d6efd;
+    transform: translateX(3px);
+}
+
+.spell-tooltip {
+    text-align: left;
+    max-width: 350px;
+    font-size: 0.85rem;
+}
+
+.tooltip-inner {
+    max-width: 400px !important;
+    text-align: left;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            html: true,
+            trigger: 'hover focus',
+            delay: { show: 300, hide: 100 }
+        });
+    });
+});
+</script>
+{% endblock %}

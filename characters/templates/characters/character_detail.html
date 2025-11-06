@@ -1,0 +1,274 @@
+{% extends 'characters/base.html' %}
+
+{% block title %}{{ character.name }} - Character Sheet{% endblock %}
+
+{% block content %}
+<style>
+    /* Center all text in character sheet */
+    .character-sheet * {
+        text-align: center;
+    }
+    .character-sheet .text-start {
+        text-align: left !important;
+    }
+    /* Ability score styling */
+    .ability-box {
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        padding: 8px;
+        margin-bottom: 8px;
+    }
+    .ability-score {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    .ability-modifier {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    
+    /* Spell hover effect styling */
+    .spell-name-hover {
+        cursor: help;
+        transition: all 0.2s ease;
+        border-bottom: 1px dotted rgba(13, 110, 253, 0.4);
+    }
+    
+    .spell-name-hover:hover {
+        color: #0d6efd;
+        border-bottom-color: #0d6efd;
+    }
+    
+    .spell-clickable {
+        cursor: pointer !important;
+    }
+    
+    .spell-clickable:active {
+        transform: scale(0.98);
+    }
+    
+    .spell-tooltip-detail {
+        text-align: left;
+        max-width: 320px;
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+    
+    /* Equipment hover effect styling */
+    .equipment-clickable {
+        cursor: pointer !important;
+        transition: all 0.2s ease;
+        border-bottom: 1px dotted rgba(108, 117, 125, 0.4);
+    }
+    
+    .equipment-clickable:hover {
+        color: #6c757d;
+        border-bottom-color: #6c757d;
+    }
+    
+    .equipment-clickable:active {
+        transform: scale(0.98);
+    }
+    
+    .equipment-tooltip-detail {
+        text-align: left;
+        max-width: 320px;
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+    
+    .tooltip-inner {
+        max-width: 350px !important;
+        text-align: left;
+    }
+    
+    #spellDetailModal .modal-body {
+        font-size: 0.95rem;
+    }
+    
+    #spellDetailModal strong {
+        color: #0d6efd;
+    }
+    
+    #equipmentDetailModal .modal-body {
+        font-size: 0.95rem;
+    }
+    
+    #equipmentDetailModal strong {
+        color: #6c757d;
+    }
+</style>
+
+<!-- Header with Character Name and Info -->
+<div class="text-center mb-3">
+    <h1 class="mb-1">{{ character.name }}</h1>
+    <p class="mb-2" style="font-size: 1.1rem;">
+        <strong>Level {{ character.level }} {% if character.subrace %}{{ character.subrace }} {% endif %}{{ character.race.name }} {{ character.character_class.name }}</strong>
+    </p>
+    <div class="btn-group">
+        {% if character.level < 20 %}
+        <a href="{% url 'character_level_up' character.pk %}" class="btn btn-success btn-sm">
+            <i class="fas fa-arrow-up"></i> Level Up
+        </a>
+        {% endif %}
+        <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+            <i class="fas fa-edit"></i> Edit
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'character_edit' character.pk %}"><i class="fas fa-clipboard-list"></i> Basic Info</a></li>
+            <li><a class="dropdown-item" href="{% url 'character_edit_skills' character.pk %}"><i class="fas fa-bolt"></i> Skills</a></li>
+            <li><a class="dropdown-item" href="{% url 'character_edit_details' character.pk %}"><i class="fas fa-backpack"></i> Details & Equipment</a></li>
+            {% if character.is_spellcaster %}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'character_manage_spells' character.pk %}"><i class="fas fa-magic"></i> Manage Spells</a></li>
+            {% endif %}
+        </ul>
+        <a href="{% url 'character_list' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+</div>
+
+<!-- Main Character Sheet Layout -->
+<div class="row g-3 character-sheet">
+    <!-- Left Column: Ability Scores -->
+    <div class="col-lg-2">
+        {% include 'characters/components/ability_scores.html' %}
+    </div>
+    
+    <!-- Skills Column -->
+    <div class="col-lg-2" style="height: 100%;">
+        {% include 'characters/components/skills.html' %}
+    </div>
+    
+    <!-- Middle Column: Combat Stats -->
+    <div class="col-lg-5">
+        {% include 'characters/components/combat_stats.html' %}
+    </div>
+    
+    <!-- Right Column: Character Details and Spells -->
+    <div class="col-lg-3">
+        {% include 'characters/components/character_info.html' %}
+        {% include 'characters/components/personality.html' %}
+        {% include 'characters/components/languages_proficiencies.html' %}
+        {% include 'characters/components/spells_section.html' %}
+    </div>
+</div>
+
+<!-- Spell Detail Modal -->
+<div class="modal fade" id="spellDetailModal" tabindex="-1" aria-labelledby="spellDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="spellDetailModalLabel">
+                    <i class="fas fa-magic"></i> <span id="modalSpellName">Spell Details</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Level:</strong> <span id="modalSpellLevel"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>School:</strong> <span id="modalSpellSchool"></span>
+                    </div>
+                </div>
+                
+                <div id="modalSpellDamage" class="alert alert-danger mb-3" style="display: none;">
+                    <strong><i class="fas fa-fire"></i> Damage:</strong> <span id="modalSpellDamageText"></span>
+                </div>
+                
+                <div id="modalSpellSave" class="alert alert-warning mb-3" style="display: none;">
+                    <strong><i class="fas fa-shield-alt"></i> Saving Throw:</strong> <span id="modalSpellSaveText"></span>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Casting Time:</strong><br>
+                        <span id="modalSpellCastingTime"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Range:</strong><br>
+                        <span id="modalSpellRange"></span>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Components:</strong><br>
+                        <span id="modalSpellComponents"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Duration:</strong><br>
+                        <span id="modalSpellDuration"></span>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div>
+                    <strong>Description:</strong>
+                    <p id="modalSpellDescription" class="mt-2"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Equipment Detail Modal -->
+<div class="modal fade" id="equipmentDetailModal" tabindex="-1" aria-labelledby="equipmentDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title" id="equipmentDetailModalLabel">
+                    <i class="fas fa-box"></i> <span id="modalEquipmentName">Equipment Details</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Category:</strong> <span id="modalEquipmentCategory"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Cost:</strong> <span id="modalEquipmentCost"></span> gp
+                    </div>
+                </div>
+                
+                <div id="modalEquipmentDamage" class="alert alert-danger mb-3" style="display: none;">
+                    <strong><i class="fas fa-fire"></i> Damage:</strong> <span id="modalEquipmentDamageText"></span>
+                </div>
+                
+                <div id="modalEquipmentAC" class="alert alert-primary mb-3" style="display: none;">
+                    <strong><i class="fas fa-shield-alt"></i> Armor Class:</strong> <span id="modalEquipmentACText"></span>
+                </div>
+                
+                <div id="modalEquipmentProperties" class="alert alert-info mb-3" style="display: none;">
+                    <strong><i class="fas fa-list"></i> Properties:</strong> <span id="modalEquipmentPropertiesText"></span>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Weight:</strong> <span id="modalEquipmentWeight"></span> lbs
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div>
+                    <strong>Description:</strong>
+                    <p id="modalEquipmentDescription" class="mt-2"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'characters/components/character_sheet_scripts.html' %}
+
+{% endblock %}

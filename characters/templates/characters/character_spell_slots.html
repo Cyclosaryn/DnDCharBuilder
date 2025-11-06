@@ -1,0 +1,199 @@
+{% extends 'characters/base.html' %}
+{% load static %}
+
+{% block title %}Configure Spell Slots - {{ character.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="fas fa-cog text-primary"></i> Configure Spell Slots</h2>
+                    <p class="text-muted mb-0">{{ character.name }} - Level {{ character.level }} {{ character.character_class.name }}</p>
+                </div>
+                <a href="{% url 'character_manage_spells' character.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Spells
+                </a>
+            </div>
+
+            <!-- Form -->
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Spellcasting Ability -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-brain"></i> Spellcasting Ability</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Class Recommendations:</strong><br>
+                            <strong>Intelligence:</strong> Wizard<br>
+                            <strong>Wisdom:</strong> Cleric, Druid, Ranger<br>
+                            <strong>Charisma:</strong> Bard, Paladin, Sorcerer, Warlock
+                        </div>
+                        {{ form.spellcasting_ability }}
+                    </div>
+                </div>
+
+                <!-- Spell Slots by Level -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-list-ol"></i> Spell Slots by Level</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Important:</strong> Set the maximum spell slots based on your class and level. 
+                            Refer to your class's Spellcasting table in the D&D 5e rules.
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Spell Level</th>
+                                        <th>Max Slots</th>
+                                        <th>Used Slots</th>
+                                        <th>Available</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Level 1</strong></td>
+                                        <td>{{ form.spell_slots_1_max }}</td>
+                                        <td>{{ form.spell_slots_1_used }}</td>
+                                        <td>
+                                            {% with slot=spell_slots.0 %}
+                                                <span class="badge {% if slot.available > 0 %}bg-success{% elif slot.max > 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ slot.available }}
+                                                </span>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Level 2</strong></td>
+                                        <td>{{ form.spell_slots_2_max }}</td>
+                                        <td>{{ form.spell_slots_2_used }}</td>
+                                        <td>
+                                            {% with slot=spell_slots.1 %}
+                                                <span class="badge {% if slot.available > 0 %}bg-success{% elif slot.max > 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ slot.available }}
+                                                </span>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Level 3</strong></td>
+                                        <td>{{ form.spell_slots_3_max }}</td>
+                                        <td>{{ form.spell_slots_3_used }}</td>
+                                        <td>
+                                            {% with slot=spell_slots.2 %}
+                                                <span class="badge {% if slot.available > 0 %}bg-success{% elif slot.max > 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ slot.available }}
+                                                </span>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Level 4</strong></td>
+                                        <td>{{ form.spell_slots_4_max }}</td>
+                                        <td>{{ form.spell_slots_4_used }}</td>
+                                        <td>
+                                            {% with slot=spell_slots.3 %}
+                                                <span class="badge {% if slot.available > 0 %}bg-success{% elif slot.max > 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ slot.available }}
+                                                </span>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Level 5</strong></td>
+                                        <td>{{ form.spell_slots_5_max }}</td>
+                                        <td>{{ form.spell_slots_5_used }}</td>
+                                        <td>
+                                            {% with slot=spell_slots.4 %}
+                                                <span class="badge {% if slot.available > 0 %}bg-success{% elif slot.max > 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ slot.available }}
+                                                </span>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Level 6</strong></td>
+                                        <td>{{ form.spell_slots_6_max }}</td>
+                                        <td>{{ form.spell_slots_6_used }}</td>
+                                        <td>
+                                            {% with slot=spell_slots.5 %}
+                                                <span class="badge {% if slot.available > 0 %}bg-success{% elif slot.max > 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ slot.available }}
+                                                </span>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Level 7</strong></td>
+                                        <td>{{ form.spell_slots_7_max }}</td>
+                                        <td>{{ form.spell_slots_7_used }}</td>
+                                        <td>
+                                            {% with slot=spell_slots.6 %}
+                                                <span class="badge {% if slot.available > 0 %}bg-success{% elif slot.max > 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ slot.available }}
+                                                </span>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Level 8</strong></td>
+                                        <td>{{ form.spell_slots_8_max }}</td>
+                                        <td>{{ form.spell_slots_8_used }}</td>
+                                        <td>
+                                            {% with slot=spell_slots.7 %}
+                                                <span class="badge {% if slot.available > 0 %}bg-success{% elif slot.max > 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ slot.available }}
+                                                </span>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Level 9</strong></td>
+                                        <td>{{ form.spell_slots_9_max }}</td>
+                                        <td>{{ form.spell_slots_9_used }}</td>
+                                        <td>
+                                            {% with slot=spell_slots.8 %}
+                                                <span class="badge {% if slot.available > 0 %}bg-success{% elif slot.max > 0 %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                    {{ slot.available }}
+                                                </span>
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-3">
+                            <h6><i class="fas fa-book-open"></i> Quick Reference: Spell Slots by Class Level</h6>
+                            <p class="small text-muted">
+                                For accurate spell slot numbers, refer to your class's Spellcasting table. 
+                                For example, a level 5 Wizard typically has: 4/3/2 (four 1st-level, three 2nd-level, two 3rd-level slots).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mb-4">
+                    <a href="{% url 'character_manage_spells' character.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save Configuration
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,165 @@
+{% extends 'characters/base.html' %}
+
+{% block title %}Edit Skills - {{ character.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="mb-4">Edit Character: {{ character.name }}</h1>
+        
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_edit' character.pk %}"><i class="fas fa-clipboard-list"></i> Basic Info</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'character_edit_skills' character.pk %}"><i class="fas fa-bolt"></i> Skills</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_edit_details' character.pk %}"><i class="fas fa-backpack"></i> Details & Equipment</a>
+            </li>
+            {% if character.is_spellcaster %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_manage_spells' character.pk %}"><i class="fas fa-magic"></i> Spells</a>
+            </li>
+            {% endif %}
+        </ul>
+        
+        <div class="card">
+            <div class="card-header">
+                Skill Proficiencies
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <p class="text-muted">
+                        Select the skills your character is proficient in. Your class grants proficiency in {{ character.character_class.num_skills }} skills.
+                    </p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check mb-2">
+                                {{ form.acrobatics }}
+                                <label class="form-check-label" for="{{ form.acrobatics.id_for_label }}">
+                                    Acrobatics (Dex)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.animal_handling }}
+                                <label class="form-check-label" for="{{ form.animal_handling.id_for_label }}">
+                                    Animal Handling (Wis)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.arcana }}
+                                <label class="form-check-label" for="{{ form.arcana.id_for_label }}">
+                                    Arcana (Int)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.athletics }}
+                                <label class="form-check-label" for="{{ form.athletics.id_for_label }}">
+                                    Athletics (Str)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.deception }}
+                                <label class="form-check-label" for="{{ form.deception.id_for_label }}">
+                                    Deception (Cha)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.history }}
+                                <label class="form-check-label" for="{{ form.history.id_for_label }}">
+                                    History (Int)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.insight }}
+                                <label class="form-check-label" for="{{ form.insight.id_for_label }}">
+                                    Insight (Wis)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.intimidation }}
+                                <label class="form-check-label" for="{{ form.intimidation.id_for_label }}">
+                                    Intimidation (Cha)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.investigation }}
+                                <label class="form-check-label" for="{{ form.investigation.id_for_label }}">
+                                    Investigation (Int)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-check mb-2">
+                                {{ form.medicine }}
+                                <label class="form-check-label" for="{{ form.medicine.id_for_label }}">
+                                    Medicine (Wis)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.nature }}
+                                <label class="form-check-label" for="{{ form.nature.id_for_label }}">
+                                    Nature (Int)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.perception }}
+                                <label class="form-check-label" for="{{ form.perception.id_for_label }}">
+                                    Perception (Wis)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.performance }}
+                                <label class="form-check-label" for="{{ form.performance.id_for_label }}">
+                                    Performance (Cha)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.persuasion }}
+                                <label class="form-check-label" for="{{ form.persuasion.id_for_label }}">
+                                    Persuasion (Cha)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.religion }}
+                                <label class="form-check-label" for="{{ form.religion.id_for_label }}">
+                                    Religion (Int)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.sleight_of_hand }}
+                                <label class="form-check-label" for="{{ form.sleight_of_hand.id_for_label }}">
+                                    Sleight of Hand (Dex)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.stealth }}
+                                <label class="form-check-label" for="{{ form.stealth.id_for_label }}">
+                                    Stealth (Dex)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.survival }}
+                                <label class="form-check-label" for="{{ form.survival.id_for_label }}">
+                                    Survival (Wis)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'character_detail' character.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Skills</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

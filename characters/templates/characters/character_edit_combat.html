@@ -1,0 +1,231 @@
+{% extends 'characters/base.html' %}
+
+{% block title %}Edit Combat Stats - {{ character.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="mb-4"><i class="fas fa-heart"></i> Edit Combat Stats: {{ character.name }}</h1>
+        
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_edit' character.pk %}">
+                    <i class="fas fa-clipboard-list"></i> Basic Info
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_edit_skills' character.pk %}">
+                    <i class="fas fa-bolt"></i> Skills
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_edit_details' character.pk %}">
+                    <i class="fas fa-backpack"></i> Details & Equipment
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'character_edit_combat' character.pk %}">
+                    <i class="fas fa-heart"></i> Combat & Survival
+                </a>
+            </li>
+            {% if character.is_spellcaster %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'character_manage_spells' character.pk %}">
+                    <i class="fas fa-magic"></i> Spells
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+        
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-shield-alt"></i> Combat & Survival Tracking
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Hit Points Section -->
+                    <h5 class="mb-3"><i class="fas fa-heart text-danger"></i> Hit Points</h5>
+                    <div class="alert alert-info">
+                        <strong>Maximum HP:</strong> {{ character.max_hit_points }}<br>
+                        <small>Maximum HP is set during character creation and level-up.</small>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.current_hit_points.label }}</label>
+                            {{ form.current_hit_points }}
+                            {% if form.current_hit_points.errors %}
+                                <div class="text-danger">{{ form.current_hit_points.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.temporary_hit_points.label }}</label>
+                            {{ form.temporary_hit_points }}
+                            <small class="text-muted d-block">Temp HP absorbs damage first</small>
+                            {% if form.temporary_hit_points.errors %}
+                                <div class="text-danger">{{ form.temporary_hit_points.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{ form.hit_dice_used.label }}</label>
+                            {{ form.hit_dice_used }}
+                            <small class="text-muted d-block">Max: {{ character.level }}</small>
+                            {% if form.hit_dice_used.errors %}
+                                <div class="text-danger">{{ form.hit_dice_used.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Inspiration -->
+                    <h5 class="mb-3"><i class="fas fa-star text-warning"></i> Inspiration</h5>
+                    <div class="mb-4">
+                        <div class="form-check">
+                            {{ form.inspiration }}
+                            <label class="form-check-label" for="{{ form.inspiration.id_for_label }}">
+                                {{ form.inspiration.label }}
+                            </label>
+                            <small class="text-muted d-block">Award inspiration for exceptional roleplay</small>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Death Saves -->
+                    <h5 class="mb-3"><i class="fas fa-skull-crossbones"></i> Death Saves</h5>
+                    <div class="alert alert-warning">
+                        <small>Track death saves when a character is at 0 HP and unconscious. Three successes stabilize, three failures result in death.</small>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label text-success">{{ form.death_save_successes.label }}</label>
+                            {{ form.death_save_successes }}
+                            {% if form.death_save_successes.errors %}
+                                <div class="text-danger">{{ form.death_save_successes.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-danger">{{ form.death_save_failures.label }}</label>
+                            {{ form.death_save_failures }}
+                            {% if form.death_save_failures.errors %}
+                                <div class="text-danger">{{ form.death_save_failures.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Exhaustion -->
+                    <h5 class="mb-3"><i class="fas fa-tired"></i> Exhaustion</h5>
+                    <div class="alert alert-info">
+                        <strong>Exhaustion Levels:</strong><br>
+                        <small>
+                            1: Disadvantage on ability checks<br>
+                            2: Speed halved<br>
+                            3: Disadvantage on attack rolls and saving throws<br>
+                            4: Hit point maximum halved<br>
+                            5: Speed reduced to 0<br>
+                            6: Death
+                        </small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">{{ form.exhaustion_level.label }}</label>
+                        {{ form.exhaustion_level }}
+                        {% if form.exhaustion_level.errors %}
+                            <div class="text-danger">{{ form.exhaustion_level.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Conditions -->
+                    <h5 class="mb-3"><i class="fas fa-exclamation-triangle"></i> Active Conditions</h5>
+                    <div class="alert alert-secondary">
+                        <small>
+                            <strong>Common Conditions:</strong> Blinded, Charmed, Deafened, Frightened, Grappled, Incapacitated, 
+                            Invisible, Paralyzed, Petrified, Poisoned, Prone, Restrained, Stunned, Unconscious
+                        </small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">{{ form.conditions.label }}</label>
+                        {{ form.conditions }}
+                        {% if form.conditions.errors %}
+                            <div class="text-danger">{{ form.conditions.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Damage Types -->
+                    <h5 class="mb-3"><i class="fas fa-shield-alt"></i> Damage Types & Immunities</h5>
+                    <div class="alert alert-secondary">
+                        <small>
+                            <strong>Damage Types:</strong> Acid, Bludgeoning, Cold, Fire, Force, Lightning, Necrotic, Piercing, Poison, Psychic, Radiant, Slashing, Thunder<br>
+                            <strong>Tip:</strong> These typically come from racial traits, class features, or magic items.
+                        </small>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.damage_immunities.label }}</label>
+                            {{ form.damage_immunities }}
+                            <small class="text-muted d-block">No damage from these types</small>
+                            {% if form.damage_immunities.errors %}
+                                <div class="text-danger">{{ form.damage_immunities.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.damage_resistances.label }}</label>
+                            {{ form.damage_resistances }}
+                            <small class="text-muted d-block">Half damage from these types</small>
+                            {% if form.damage_resistances.errors %}
+                                <div class="text-danger">{{ form.damage_resistances.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.damage_vulnerabilities.label }}</label>
+                            {{ form.damage_vulnerabilities }}
+                            <small class="text-muted d-block">Double damage from these types</small>
+                            {% if form.damage_vulnerabilities.errors %}
+                                <div class="text-danger">{{ form.damage_vulnerabilities.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.condition_immunities.label }}</label>
+                            {{ form.condition_immunities }}
+                            <small class="text-muted d-block">Immune to these conditions</small>
+                            {% if form.condition_immunities.errors %}
+                                <div class="text-danger">{{ form.condition_immunities.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'character_detail' character.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Combat Stats
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-3">
+            <h6><i class="fas fa-lightbulb"></i> Quick Tips:</h6>
+            <ul class="mb-0">
+                <li><strong>Short Rest:</strong> Spend hit dice to regain HP. Roll your hit die + CON modifier per die spent.</li>
+                <li><strong>Long Rest:</strong> Regain all HP and half of used hit dice (minimum 1). Reset death saves and reduce exhaustion by 1.</li>
+                <li><strong>Temp HP:</strong> Doesn't stack - always take the higher value when receiving new temp HP.</li>
+                <li><strong>Death Saves:</strong> Reset to 0 when character regains any HP or is stabilized.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

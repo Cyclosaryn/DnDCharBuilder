@@ -1,0 +1,49 @@
+{% extends 'characters/base.html' %}
+
+{% block title %}Backgrounds - D&D Character Builder{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Backgrounds</h1>
+
+{% if backgrounds %}
+    <div class="row">
+        {% for background in backgrounds %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5>{{ background.name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>{{ background.description }}</p>
+                        
+                        <h6>Skill Proficiencies:</h6>
+                        <p>{{ background.skill_proficiencies }}</p>
+                        
+                        {% if background.tool_proficiencies %}
+                            <h6>Tool Proficiencies:</h6>
+                            <p>{{ background.tool_proficiencies }}</p>
+                        {% endif %}
+                        
+                        {% if background.languages %}
+                            <h6>Languages:</h6>
+                            <p>{{ background.languages }} additional language(s)</p>
+                        {% endif %}
+                        
+                        <h6>Equipment:</h6>
+                        <p>{{ background.equipment }}</p>
+                        
+                        <h6>Feature: {{ background.feature }}</h6>
+                        <p>{{ background.feature_description }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        No backgrounds available. Please add backgrounds through the admin interface.
+    </div>
+{% endif %}
+
+<a href="{% url 'home' %}" class="btn btn-outline-secondary mt-3"><i class="fas fa-arrow-left"></i> Back to Home</a>
+{% endblock %}

@@ -1,0 +1,22 @@
+<!-- Personality -->
+<div class="card mb-2">
+    <div class="card-header p-2"><strong>PERSONALITY</strong></div>
+    <div class="card-body p-2 text-start">
+        <div class="mb-2">
+            <strong style="font-size: 0.85rem;">Traits:</strong>
+            <p class="mb-0" style="font-size: 0.9rem;">{{ character.personality_traits|default:"—" }}</p>
+        </div>
+        <div class="mb-2">
+            <strong style="font-size: 0.85rem;">Ideals:</strong>
+            <p class="mb-0" style="font-size: 0.9rem;">{{ character.ideals|default:"—" }}</p>
+        </div>
+        <div class="mb-2">
+            <strong style="font-size: 0.85rem;">Bonds:</strong>
+            <p class="mb-0" style="font-size: 0.9rem;">{{ character.bonds|default:"—" }}</p>
+        </div>
+        <div>
+            <strong style="font-size: 0.85rem;">Flaws:</strong>
+            <p class="mb-0" style="font-size: 0.9rem;">{{ character.flaws|default:"—" }}</p>
+        </div>
+    </div>
+</div>

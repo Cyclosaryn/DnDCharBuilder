@@ -1,0 +1,208 @@
+{% extends 'characters/base.html' %}
+{% load static %}
+
+{% block title %}Create Character - Step 4{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="mb-4">Create Character - Step 4: Select Spells</h1>
+        
+        <div class="progress mb-4">
+            <div class="progress-bar" role="progressbar" style="width: 100%">Step 4 of 4</div>
+        </div>
+        
+        <div class="card mb-3">
+            <div class="card-header">
+                Character: {{ character.name }}
+            </div>
+            <div class="card-body">
+                <p><strong>Race:</strong> {{ character.race.name }} | <strong>Class:</strong> {{ character.character_class.name }} | <strong>Level:</strong> {{ character.level }}</p>
+            </div>
+        </div>
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Spellcasting Configuration -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-brain"></i> Spellcasting Configuration</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-lightbulb"></i>
+                            <strong>Your class ({{ character.character_class.name }}) uses 
+                            {% if character.spellcasting_ability == 'INT' %}Intelligence
+                            {% elif character.spellcasting_ability == 'WIS' %}Wisdom
+                            {% elif character.spellcasting_ability == 'CHA' %}Charisma
+                            {% endif %}
+                            for spellcasting.</strong>
+                            Configure your spell slots below based on your class level.
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Spellcasting Ability</label>
+                                {{ spell_slots_form.spellcasting_ability }}
+                            </div>
+                        </div>
+
+                        <h6 class="mt-4 mb-3">Spell Slots (Set based on your class table)</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label><strong>Level 1 Spell Slots</strong></label>
+                                {{ spell_slots_form.spell_slots_1_max }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label><strong>Level 2 Spell Slots</strong></label>
+                                {{ spell_slots_form.spell_slots_2_max }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label><strong>Level 3 Spell Slots</strong></label>
+                                {{ spell_slots_form.spell_slots_3_max }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label><strong>Level 4 Spell Slots</strong></label>
+                                {{ spell_slots_form.spell_slots_4_max }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label><strong>Level 5 Spell Slots</strong></label>
+                                {{ spell_slots_form.spell_slots_5_max }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label><strong>Level 6 Spell Slots</strong></label>
+                                {{ spell_slots_form.spell_slots_6_max }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label><strong>Level 7 Spell Slots</strong></label>
+                                {{ spell_slots_form.spell_slots_7_max }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label><strong>Level 8 Spell Slots</strong></label>
+                                {{ spell_slots_form.spell_slots_8_max }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label><strong>Level 9 Spell Slots</strong></label>
+                                {{ spell_slots_form.spell_slots_9_max }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spell Selection -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-scroll"></i> Choose Your Spells</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Note:</strong> Select spells appropriate for a level {{ character.level }} {{ character.character_class.name }}. 
+                            Check your class rules for how many spells you can know/prepare at this level.
+                        </div>
+
+                        {% for field in spell_form %}
+                            <div class="spell-level-section mb-4">
+                                <h5 class="border-bottom pb-2">
+                                    {% if 'level_0' in field.name %}
+                                        <i class="fas fa-star text-warning"></i> {{ field.label }}
+                                        <small class="text-muted">(Always available)</small>
+                                    {% else %}
+                                        <i class="fas fa-circle-notch text-primary"></i> {{ field.label }}
+                                    {% endif %}
+                                </h5>
+                                <div class="row">
+                                    {% for spell in spell_form.spells_by_level.values %}
+                                        {% for spell_obj in spell %}
+                                            {% if spell_obj.level|stringformat:"s" in field.name %}
+                                            <div class="col-md-6 col-lg-4 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" 
+                                                           type="checkbox" 
+                                                           name="{{ field.name }}" 
+                                                           value="{{ spell_obj.id }}" 
+                                                           id="spell_{{ spell_obj.id }}">
+                                                    <label class="form-check-label spell-label" 
+                                                           for="spell_{{ spell_obj.id }}"
+                                                           data-bs-toggle="tooltip"
+                                                           data-bs-html="true"
+                                                           data-bs-placement="top"
+                                                           title="<div class='spell-tooltip'>
+                                                                    <strong>{{ spell_obj.name }}</strong><br>
+                                                                    <em>Level {{ spell_obj.level }} {{ spell_obj.school }}</em><br>
+                                                                    <strong>Casting Time:</strong> {{ spell_obj.casting_time }}<br>
+                                                                    <strong>Range:</strong> {{ spell_obj.range }}<br>
+                                                                    <strong>Components:</strong> {{ spell_obj.components }}<br>
+                                                                    <strong>Duration:</strong> {{ spell_obj.duration }}<br>
+                                                                    <hr style='margin: 5px 0;'>
+                                                                    {{ spell_obj.description|truncatewords:30 }}
+                                                                  </div>">
+                                                        {{ spell_obj.name }} <span class="badge bg-secondary">{{ spell_obj.school }}</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mb-4">
+                    <a href="{% url 'character_create_step3' character.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-check"></i> Complete Character Creation
+                    </button>
+                </div>
+            </form>
+    </div>
+</div>
+
+<style>
+.spell-level-section {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.spell-label {
+    cursor: help;
+    transition: all 0.2s ease;
+}
+
+.spell-label:hover {
+    color: #0d6efd;
+    transform: translateX(3px);
+}
+
+.spell-tooltip {
+    text-align: left;
+    max-width: 350px;
+    font-size: 0.85rem;
+}
+
+.tooltip-inner {
+    max-width: 400px !important;
+    text-align: left;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            html: true,
+            trigger: 'hover focus',
+            delay: { show: 300, hide: 100 }
+        });
+    });
+});
+</script>
+{% endblock %}

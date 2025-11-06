@@ -1,0 +1,46 @@
+{% extends 'characters/base.html' %}
+
+{% block title %}Races - D&D Character Builder{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Races</h1>
+
+{% if races %}
+    <div class="row">
+        {% for race in races %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5>{{ race.name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Size:</strong> {{ race.size }} | <strong>Speed:</strong> {{ race.speed }} ft</p>
+                        <p>{{ race.description }}</p>
+                        
+                        <h6>Ability Score Increases:</h6>
+                        <ul class="mb-0">
+                            {% if race.strength_bonus %}<li>Strength +{{ race.strength_bonus }}</li>{% endif %}
+                            {% if race.dexterity_bonus %}<li>Dexterity +{{ race.dexterity_bonus }}</li>{% endif %}
+                            {% if race.constitution_bonus %}<li>Constitution +{{ race.constitution_bonus }}</li>{% endif %}
+                            {% if race.intelligence_bonus %}<li>Intelligence +{{ race.intelligence_bonus }}</li>{% endif %}
+                            {% if race.wisdom_bonus %}<li>Wisdom +{{ race.wisdom_bonus }}</li>{% endif %}
+                            {% if race.charisma_bonus %}<li>Charisma +{{ race.charisma_bonus }}</li>{% endif %}
+                        </ul>
+                        
+                        {% if race.traits %}
+                            <h6 class="mt-3">Traits:</h6>
+                            <p style="white-space: pre-wrap;">{{ race.traits }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        No races available. Please add races through the admin interface.
+    </div>
+{% endif %}
+
+<a href="{% url 'home' %}" class="btn btn-outline-secondary mt-3"><i class="fas fa-arrow-left"></i> Back to Home</a>
+{% endblock %}
