@@ -2,6 +2,23 @@
 
 {% block title %}Characters - D&D Character Builder{% endblock %}
 
+{% block back_button %}
+<div class="back-button">
+    <a href="{% url 'home' %}" class="btn">
+        <i class="fas fa-arrow-left"></i> Back to Home
+    </a>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Characters</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>My Characters</h1>

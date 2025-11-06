@@ -2,6 +2,24 @@
 
 {% block title %}{{ character.name }} - Character Sheet{% endblock %}
 
+{% block back_button %}
+<div class="back-button">
+    <a href="{% url 'character_list' %}" class="btn">
+        <i class="fas fa-arrow-left"></i> Back to Characters
+    </a>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'character_list' %}">Characters</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ character.name }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <style>
     /* Center all text in character sheet */

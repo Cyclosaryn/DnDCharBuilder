@@ -2,6 +2,23 @@
 
 {% block title %}Backgrounds - D&D Character Builder{% endblock %}
 
+{% block back_button %}
+<div class="back-button">
+    <a href="{% url 'home' %}" class="btn">
+        <i class="fas fa-arrow-left"></i> Back to Home
+    </a>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Backgrounds</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <h1 class="mb-4">Backgrounds</h1>
 

@@ -62,6 +62,40 @@
             font-size: 1.2rem;
             color: #666;
         }
+        .back-button {
+            margin-bottom: 20px;
+        }
+        .back-button .btn {
+            background-color: transparent;
+            border: 2px solid var(--dnd-dark);
+            color: var(--dnd-dark);
+            font-weight: bold;
+        }
+        .back-button .btn:hover {
+            background-color: var(--dnd-dark);
+            color: white;
+        }
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: "›";
+            color: var(--dnd-dark);
+        }
+        .breadcrumb-item a {
+            color: var(--dnd-red);
+            text-decoration: none;
+        }
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+        .breadcrumb-item.active {
+            color: var(--dnd-dark);
+        }
         footer {
             margin-top: 50px;
             padding: 20px;
@@ -109,6 +143,12 @@
     </nav>
 
     <main class="container my-4">
+        {% block back_button %}
+        {% endblock %}
+        
+        {% block breadcrumb %}
+        {% endblock %}
+        
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">

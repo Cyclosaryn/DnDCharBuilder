@@ -3,6 +3,25 @@
 
 {% block title %}Manage Spells - {{ character.name }}{% endblock %}
 
+{% block back_button %}
+<div class="back-button">
+    <a href="{% url 'character_detail' character.pk %}" class="btn">
+        <i class="fas fa-arrow-left"></i> Back to Character
+    </a>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'character_list' %}">Characters</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'character_detail' character.pk %}">{{ character.name }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Manage Spells</li>
+    </ol>
+</nav>
+{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-lg-8 mx-auto">
