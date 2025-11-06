@@ -18,9 +18,6 @@ A Django-based web application for creating and managing Dungeons & Dragons 5th 
 ## Quick Start
 
 ```bash
-# Navigate to project directory
-cd /Users/michaelverbroekken/Repositories/DnDCharBuilder
-
 # Activate virtual environment
 source venv/bin/activate
 

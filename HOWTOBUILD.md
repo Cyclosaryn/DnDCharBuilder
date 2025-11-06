@@ -22,12 +22,7 @@ Complete guide for setting up, running, and building the D&D Character Builder a
 
 ### Installation Steps
 
-1. **Navigate to the project directory:**
-```bash
-cd /Users/michaelverbroekken/Repositories/DnDCharBuilder
-```
-
-2. **Create a virtual environment:**
+1. **Create a virtual environment:**
 ```bash
 python3 -m venv venv
 ```
@@ -112,17 +107,12 @@ pip install pyinstaller
 
 ### Build Process
 
-1. **Ensure you're in the project directory:**
-```bash
-cd /Users/michaelverbroekken/Repositories/DnDCharBuilder
-```
-
-2. **Activate virtual environment:**
+1. **Activate virtual environment:**
 ```bash
 source venv/bin/activate
 ```
 
-3. **Build using the spec file:**
+2. **Build using the spec file:**
 ```bash
 # macOS
 pyinstaller build_macos.spec
@@ -134,7 +124,7 @@ pyinstaller build_windows.spec
 pyinstaller build_standalone.spec
 ```
 
-4. **Locate the built application:**
+3. **Locate the built application:**
 ```
 dist/
 └── DnDCharBuilder/
