@@ -141,6 +141,9 @@
                 <li><a class="dropdown-item" href="{% url 'character_manage_spells' character.pk %}"><i class="fas fa-magic"></i> Manage Spells</a></li>
             {% endif %}
         </ul>
+        <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
+            <i class="fas fa-print"></i> Print Character Sheet
+        </button>
         <a href="{% url 'character_list' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back</a>
     </div>
 </div>

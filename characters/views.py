@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.http import HttpResponse
 from .models import Character, Race, CharacterClass, Background, Equipment, Feat
 from .forms import CharacterCreationForm, CharacterSkillsForm, CharacterDetailsForm, LevelUpForm, CharacterCombatForm
 
@@ -1295,3 +1296,19 @@ def equipment_detail_ajax(request, equipment_id):
         return JsonResponse(data)
     except Equipment.DoesNotExist:
         return JsonResponse({'error': 'Equipment not found'}, status=404)
+
+
+def character_sheet_pdf(request, pk):
+    """Generate and download a PDF character sheet"""
+    from .pdf_generator import generate_character_sheet_pdf
+    
+    character = get_object_or_404(Character, pk=pk)
+    
+    # Generate PDF
+    pdf_buffer = generate_character_sheet_pdf(character)
+    
+    # Create response
+    response = HttpResponse(pdf_buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{character.name}_Character_Sheet.pdf"'
+    
+    return response

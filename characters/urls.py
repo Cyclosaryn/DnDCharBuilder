@@ -25,6 +25,9 @@ urlpatterns = [
     path('ajax/spell/<int:spell_id>/', views.spell_detail_ajax, name='spell_detail_ajax'),
     path('ajax/equipment/<int:equipment_id>/', views.equipment_detail_ajax, name='equipment_detail_ajax'),
     
+    # PDF Export
+    path('characters/<int:pk>/pdf/', views.character_sheet_pdf, name='character_sheet_pdf'),
+    
     # Reference pages
     path('races/', views.RaceListView.as_view(), name='race_list'),
     path('classes/', views.ClassListView.as_view(), name='class_list'),
